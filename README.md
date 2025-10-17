@@ -25,9 +25,7 @@ This requires the teams acknowledgement of how the Discord bot API works. Typica
 The bot will heavily rely on the SEPTA transportation system API that is given by SEPTA themselves for tracking: https://www3.septa.org/
 
 ### Conceptual Design
-Describe with text (and maybe UML diagrams) the initial design concept. Include hardware and software architecture, operating system, programming language, framework, libraries, APIs, etc.
-The current design mainly stems from a usual discord bot design. A main file that connects to discord and uses a special discord specific bot (in our case SEPTA bot) keys to access the bot.
-
+This is a screenshot of how the bot would behave: https://imgur.com/a/7Zc6mB1
 
 ## Proof of Concept
 Currently using Discord Bot API through Discord development portal. Need to find a way to implement SEPTA API at the current moment https://www3.septa.org/
