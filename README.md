@@ -8,7 +8,9 @@ With the modern landscape of SEPTA (South Eastern Pennsylvania Transportation Au
 
 ## High Level Requirement
 
-This requires the teams acknowledgement of how the Discord bot API works. Typically JS or Python is used with a few libraries such as dotenv. The bot will heavily rely on the SEPTA transportation system API that is given by SEPTA themselves for tracking: https://www3.septa.org/
+- Notify users if a subscribed form of transportation is late
+- Allow users to find nearest regional rail route to get to destiation
+- Provide estimated notifications for both subway lines and trolley
 
 ## Conceptual Design
 
