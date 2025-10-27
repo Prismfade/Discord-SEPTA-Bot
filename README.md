@@ -4,7 +4,7 @@
 
 ## Project Abstract
 
-With the modern landscape of SEPTA (South Eastern Pennsylvania Transportation Authority), there has been a lot of certainties about the reliability of the service. This Discord bot service would allow updates to SEPTA transportation systems allowing users to be notified if their services are late. This project is inspired by the humor centric (but also resourceful website) https://www.isseptafucked.com/ For an example, this bot can be implemented to any Discord server, especially local centered ones. All it takes is a user to type in a command such as "!Lansdale line status" to receive information on if there is a delay on that line.
+With the modern landscape of SEPTA (South Eastern Pennsylvania Transportation Authority), there has been a lot of certainties about the reliability of the service. This Discord bot service would allow updates to SEPTA transportation systems allowing users to be notified if their services are late. This project is inspired by the humor centric (but also resourceful website) https://www.isseptafucked.com/ For an example, this bot can be implemented to any Discord server, especially local centered ones. All it takes is a user to type in a command such as "!Lansdale line status" to receive information on if there is a delay on that line. The goal is to provide commuters a tool they can use on a familiar platform such as Discord, access to information about SEPTA without having to install the SEPTA application. Providing features such as late times, ways to subscribe to notifications, and even prospect routes based on user inputs.
 
 ## High Level Requirement
 
