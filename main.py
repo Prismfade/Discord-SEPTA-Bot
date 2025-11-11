@@ -31,6 +31,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
+    current_status = "Bad , very heavy load"
     # Don't let the bot respond to itself
     if message.author == bot.user:
         return
@@ -39,8 +40,17 @@ async def on_message(message):
     if "!lansdale line status" in message.content.lower():
         await message.channel.send(f'As of September 5th 2025, 5:45pm:\n the Lansdale Line is running 210 minutes late!')
 
+    if "!issteptafucked" in message.content.lower():
+        await message.channel.send(f"Yeah shit is pretty fucked at 12:04PM \n Don't take the bus nor the train!")
+
+    if "!thecurrentstatus" in message.content.lower():
+        await message.channel.send(f"the current status is {current_status}\n")
     # This is important for running any other commands
     await bot.process_commands(message)
+
+
+
+
 
 # --- Run Bot ---
 # This will send logs to 'discord.log'
