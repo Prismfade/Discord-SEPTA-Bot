@@ -135,13 +135,39 @@ async def get_next_train(origin, destination):
                 train = data[0]  # Only need next train
                 direct = "Yes" if train.get("isdirect") else "No"
 
+                # get raw delay text from API (could be number or words)
+                raw_delay = (train.get("orig_delay") or "").strip()
+                raw_delay_lower = raw_delay.lower()
+
+                # check if delay is a number (ex: "5", "10", "-2")
+                if raw_delay.lstrip("+-").isdigit():
+                    delay = int(raw_delay)
+                else:
+                    delay = 0   # if it's words like "On time" just treat as 0
+
+                # build the status message
+                if "cancel" in raw_delay_lower:
+                    status_str = "Cancelled ❌"
+                elif "suspend" in raw_delay_lower:
+                    status_str = "Suspended 🚫"
+                elif "terminate" in raw_delay_lower:
+                    status_str = "Service terminated ❌"
+                elif "depart" in raw_delay_lower:
+                    status_str = "Departed 🚆"
+                elif "on time" in raw_delay_lower or delay == 0:
+                    status_str = "On time ✅"
+                elif delay <= 5:
+                    status_str = f"{delay} min late ⚠️"
+                else:
+                    status_str = f"{delay} min late ⛔"
+
                 return (
                     f"🚆 **Next Train: {origin.title()} → {destination.title()}**\n"
                     f"**Line:** {train.get('orig_line', 'Unknown')}\n"
                     f"**Train #:** {train.get('orig_train', 'N/A')}\n"
                     f"**Departs:** {train.get('orig_departure_time', 'N/A')}\n"
                     f"**Arrives:** {train.get('orig_arrival_time', 'N/A')}\n"
-                    f"**Delay:** {train.get('orig_delay', '0')}\n"
+                    f"**Status:** {status_str}\n"
                     f"**Direct:** {direct}"
                 )
 
