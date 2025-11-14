@@ -4,6 +4,11 @@ import logging
 from dotenv import load_dotenv
 import os
 import aiohttp
+from Septa_Api import (
+    get_regional_rail_status,
+    get_lansdale_status,
+    get_line_status
+)
 
 # Setup 
 load_dotenv()
@@ -24,112 +29,6 @@ intents.members = True
 # Bot Initialization
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# Fetch SEPTA Regional Rail Status 
-async def get_regional_rail_status():
-    url = "https://www3.septa.org/api/TrainView/index.php"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    return f"Error: SEPTA API returned status {response.status}"
-
-                data = await response.json()
-
-                if not isinstance(data, list) or len(data) == 0:
-                    return "No train data available right now."
-
-                # Summarize train status
-                trains = []
-                for train in data[:10]:  # Limit output to 10 trains
-                    line = train.get("line", "Unknown Line")
-                    train_id = train.get("trainno", "Unknown Train")
-                    delay = train.get("late", 0)
-                    status = "on time" if delay == 0 else f"{delay} min late"
-                    trains.append(f"🚆 {line} Train {train_id}: {status}")
-
-                return "\n".join(trains)
-
-    except Exception as e:
-        return f"Error fetching SEPTA data: {e}"
-    
-# Fetch SEPTA Lansdale Line Status (Hardcoded Example)
-async def get_lansdale_status():
-    url = "https://www3.septa.org/api/TrainView/index.php"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    return f"Error: SEPTA API returned status {response.status}"
-
-                data = await response.json()
-
-                if not isinstance(data, list) or len(data) == 0:
-                    return "No train data available right now."
-
-                # Filter for Lansdale trains (Lansdale hardcoded)
-                lansdale_trains = [
-                    train for train in data
-                    if "lansdale" in train.get("line", "").lower()
-                ]
-
-                if not lansdale_trains:
-                    return "No Lansdale Line trains found."
-
-                # Summarize only trains that are late
-                delayed = []
-                for train in lansdale_trains:
-                    line = train.get("line", "Unknown Line")
-                    train_id = train.get("trainno", "Unknown Train")
-                    delay = train.get("late", 0)
-                    if delay > 0:
-                        delayed.append(f"🚆 {line} Train {train_id}: {delay} min late")
-
-                if not delayed:
-                    return "All Lansdale Line trains are on time ✅"
-
-                return "\n".join(delayed[:10])  # Limit output to 10 trains
-
-    except Exception as e:
-        return f"Error fetching SEPTA data: {e}"
-    
-# Fetch SEPTA Line Status by Name 
-async def get_line_status(line_name):
-    url = "https://www3.septa.org/api/TrainView/index.php"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    return f"Error: SEPTA API returned status {response.status}"
-
-                data = await response.json()
-                if not isinstance(data, list) or len(data) == 0:
-                    return "No train data available right now."
-
-                # Filter for requested line
-                matching_trains = [
-                    train for train in data
-                    if line_name.lower() in train.get("line", "").lower()
-                ]
-
-                if not matching_trains:
-                    return f"No trains found for '{line_name.title()}' line."
-
-                # Summarize only trains that are late
-                delayed = []
-                for train in matching_trains:
-                    line = train.get("line", "Unknown Line")
-                    train_id = train.get("trainno", "Unknown Train")
-                    delay = train.get("late", 0)
-                    if delay > 0:
-                        delayed.append(f"🚆 {line} Train {train_id}: {delay} min late")
-
-                if not delayed:
-                    return f"All {line_name.title()} Line trains are on time ✅"
-
-                return "\n".join(delayed[:10])  # Limit to first 10 results
-
-    except Exception as e:
-        return f"Error fetching SEPTA data: {e}"
 
 
 # Events 
@@ -150,14 +49,14 @@ async def on_message(message):
         await message.channel.send("Fetching Lansdale Line train status… ")
         status_message = await get_lansdale_status()
         await message.channel.send(status_message)
+    #
+    # elif "!issteptafucked" in content:
+    #     await message.channel.send(
+    #         f"Yeah shit is pretty fucked at 12:04PM \n Don't take the bus nor the train!"
+    #     )
 
-    elif "!issteptafucked" in content:
-        await message.channel.send(
-            f"Yeah shit is pretty fucked at 12:04PM \n Don't take the bus nor the train!"
-        )
-
-    elif "!thecurrentstatus" in content:
-        await message.channel.send(f"the current status is {current_status}\n")
+    # elif "!thecurrentstatus" in content:
+    #     await message.channel.send(f"the current status is {current_status}\n")
 
     elif "!regional rail status" in content:
         await message.channel.send("Fetching live SEPTA Regional Rail status… ")
