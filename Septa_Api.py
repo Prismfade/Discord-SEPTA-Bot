@@ -111,3 +111,33 @@ async def get_line_status(line_name):
         return f"Error fetching SEPTA data: {e}"
 
 
+# Fetch Next Train Between Two Stations
+async def get_next_train(origin, destination):
+    url = f"https://www3.septa.org/api/NextToArrive/index.php?req1={origin}&req2={destination}"
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    return f"Error: SEPTA API returned status {response.status}"
+
+                data = await response.json()
+
+                if not isinstance(data, list) or len(data) == 0:
+                    return f"No upcoming trains from {origin} to {destination}."
+
+                train = data[0]  # Only need next train
+                direct = "Yes" if train.get("isdirect") else "No"
+
+                return (
+                    f"🚆 **Next Train: {origin.title()} → {destination.title()}**\n"
+                    f"**Line:** {train.get('orig_line', 'Unknown')}\n"
+                    f"**Train #:** {train.get('orig_train', 'N/A')}\n"
+                    f"**Departs:** {train.get('orig_departure_time', 'N/A')}\n"
+                    f"**Arrives:** {train.get('orig_arrival_time', 'N/A')}\n"
+                    f"**Delay:** {train.get('orig_delay', '0')}\n"
+                    f"**Direct:** {direct}"
+                )
+
+    except Exception as e:
+        return f"Error fetching next train info: {e}"

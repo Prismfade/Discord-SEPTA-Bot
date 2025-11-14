@@ -7,7 +7,8 @@ import aiohttp
 from Septa_Api import (
     get_regional_rail_status,
     get_lansdale_status,
-    get_line_status
+    get_line_status,
+    get_next_train   # <-- NEW IMPORT
 )
 
 # Setup 
@@ -45,24 +46,19 @@ async def on_message(message):
 
     content = message.content.lower()
 
+    #      LANSDLE LINE STATUS        #
     if "!lansdale line status" in content:
         await message.channel.send("Fetching Lansdale Line train status… ")
         status_message = await get_lansdale_status()
         await message.channel.send(status_message)
-    #
-    # elif "!issteptafucked" in content:
-    #     await message.channel.send(
-    #         f"Yeah shit is pretty fucked at 12:04PM \n Don't take the bus nor the train!"
-    #     )
 
-    # elif "!thecurrentstatus" in content:
-    #     await message.channel.send(f"the current status is {current_status}\n")
-
+    #      REGIONAL RAIL STATUS       #
     elif "!regional rail status" in content:
         await message.channel.send("Fetching live SEPTA Regional Rail status… ")
         status_message = await get_regional_rail_status()
         await message.channel.send(status_message)
 
+    #       CHECK ANY LINE STATUS     #
     elif "!check line status" in content:
         await message.channel.send("Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
 
@@ -77,8 +73,35 @@ async def on_message(message):
             status_message = await get_line_status(line_name)
             await message.channel.send(status_message)
 
-        except Exception as e:
+        except Exception:
             await message.channel.send("⏰ You didn’t reply in time or an error occurred. Try again.")
+
+    #       NEXT TRAIN FEATURE        #
+    elif "!next train" in content:
+        def check(m):
+            return m.author == message.author and m.channel == message.channel
+
+        # Ask for origin
+        await message.channel.send("What station are you getting on at?")
+
+        try:
+            origin_msg = await bot.wait_for('message', check=check, timeout=20)
+            origin = origin_msg.content.strip()
+
+            # Ask for destination
+            await message.channel.send(f"➡️ Where are you going from **{origin.title()}**?")
+            dest_msg = await bot.wait_for('message', check=check, timeout=20)
+            destination = dest_msg.content.strip()
+
+            await message.channel.send(
+                f"Fetching the **next train** from **{origin.title()} → {destination.title()}**…"
+            )
+
+            status_message = await get_next_train(origin, destination)
+            await message.channel.send(status_message)
+
+        except Exception:
+            await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
     # Allow commands to still work if added later
     await bot.process_commands(message)

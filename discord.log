@@ -1,4 +1,6 @@
-[2025-11-14 09:53:47] [INFO    ] discord.client: logging in using static token
-[2025-11-14 09:53:48] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 43b0b35a38b5a9a49669b6ce598b6091).
-[2025-11-14 09:54:05] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
-discord.ext.commands.errors.CommandNotFound: Command "check" is not found
+[2025-11-14 10:10:19] [INFO    ] discord.client: logging in using static token
+[2025-11-14 10:10:20] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 748e6d5dd41a1bef0d46204e8bb1d5bf).
+[2025-11-14 10:11:13] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "next" is not found
+[2025-11-14 10:11:55] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "next" is not found
