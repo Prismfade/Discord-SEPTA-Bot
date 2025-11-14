@@ -1,6 +1,7 @@
 import aiohttp
 
 
+STATIONS_CACHE = []
 # Fetch SEPTA Regional Rail Status
 async def get_regional_rail_status():
     url = "https://www3.septa.org/api/TrainView/index.php"
@@ -141,3 +142,25 @@ async def get_next_train(origin, destination):
 
     except Exception as e:
         return f"Error fetching next train info: {e}"
+
+
+async def stationList():
+    global STATIONS_CACHE
+
+    url = "https://www3.septa.org/api/TrainView/index.php"
+
+    fields = ["SOURCE", "dest", "orig_train", "next_station", "last_stop"]
+    stations = set()
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as r:
+            data = await r.json()
+
+            for train in data:
+                for f in fields:
+                    name = train.get(f)
+                    if name:
+                        stations.add(name)
+        STATIONS_CACHE = sorted(stations)
+        return "\n".join(sorted(stations))
+

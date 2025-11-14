@@ -8,7 +8,9 @@ from Septa_Api import (
     get_regional_rail_status,
     get_lansdale_status,
     get_line_status,
-    get_next_train   # <-- NEW IMPORT
+    get_next_train ,
+    stationList,
+STATIONS_CACHE,
 )
 
 # Setup 
@@ -32,11 +34,11 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 
 
-# Events 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name} - {bot.user.id}')
-    print('------')
+# # Events
+# @bot.event
+# async def on_ready():
+#     print(f'Logged in as {bot.user.name} - {bot.user.id}')
+#     print('------')
 
 @bot.event
 async def on_message(message):
@@ -103,8 +105,24 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
+
+    elif "!stations" in content:
+        await message.channel.send("Fetching all Regional Rail stations…")
+        result = await stationList()
+        await message.channel.send(result)
+
     # Allow commands to still work if added later
     await bot.process_commands(message)
 
-# Run Bot 
+# now you don't need to wait for input
+@bot.event
+async def on_ready():
+    await stationList()     # fills STATIONS_CACHE
+    print("Loaded station cache.")
+    print(f"Stations found: {len(STATIONS_CACHE)}")
+    print(f'Logged in as {bot.user.name} - {bot.user.id}')
+    print('------')
+
+# Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)
+
