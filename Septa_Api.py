@@ -1,7 +1,7 @@
 import aiohttp
 
-
-STATIONS_CACHE = []
+from Stations import REGIONAL_RAIL_STATIONS, normalize_station
+# STATIONS_CACHE = []  -> might not need it no more? since i made the whole listing myself
 # Fetch SEPTA Regional Rail Status
 async def get_regional_rail_status():
     url = "https://www3.septa.org/api/TrainView/index.php"
@@ -114,7 +114,12 @@ async def get_line_status(line_name):
 
 # Fetch Next Train Between Two Stations
 async def get_next_train(origin, destination):
+    #Convert user input(typos,short cuts) into station names
+    # Example: "temple", "temple u", "tu" -> "Temple University" , check the Stations.py file where its ALIASES
+    origin = normalize_station(origin)
+    destination = normalize_station(destination)
     url = f"https://www3.septa.org/api/NextToArrive/index.php?req1={origin}&req2={destination}"
+    print("DEBUG URL:", url)
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -145,22 +150,5 @@ async def get_next_train(origin, destination):
 
 
 async def stationList():
-    global STATIONS_CACHE
-
-    url = "https://www3.septa.org/api/TrainView/index.php"
-
-    fields = ["SOURCE", "dest", "orig_train", "next_station", "last_stop"]
-    stations = set()
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as r:
-            data = await r.json()
-
-            for train in data:
-                for f in fields:
-                    name = train.get(f)
-                    if name:
-                        stations.add(name)
-        STATIONS_CACHE = sorted(stations)
-        return "\n".join(sorted(stations))
-
+    # Just return the list
+    return "\n".join(REGIONAL_RAIL_STATIONS)

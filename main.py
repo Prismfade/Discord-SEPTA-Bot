@@ -10,8 +10,22 @@ from Septa_Api import (
     get_line_status,
     get_next_train ,
     stationList,
-STATIONS_CACHE,
 )
+from Stations import normalize_station
+
+
+COMMAND_LIST = []
+
+def register(cmd_name: str):
+    COMMAND_LIST.append(cmd_name)
+
+register("!lansdale line status")
+register("!regional rail status")
+register("!check line status")
+register("!next train")
+register("!stations")
+register("!help")
+
 
 # Setup 
 load_dotenv()
@@ -30,15 +44,27 @@ intents.message_content = True
 intents.members = True    
 
 # Bot Initialization
-bot = commands.Bot(command_prefix='!', intents=intents)
+# use help_command = None so the helpers command won't show up.
+bot = commands.Bot(command_prefix='!', intents=intents,help_command = None )
 
 
 
 # # Events
-# @bot.event
-# async def on_ready():
-#     print(f'Logged in as {bot.user.name} - {bot.user.id}')
-#     print('------')
+@bot.event
+async def on_ready():
+    print("Bot is online!")
+    print(f'Logged in as {bot.user.name} - {bot.user.id}')
+    print('------')
+
+    channel_id = 1437230785072463882
+    channel = bot.get_channel(channel_id)
+
+    if channel:
+        await channel.send(
+            "**👋 Hey! I'm the SEPTA Status Bot.**\n"
+            "I can check train delays, next arrivals, and station information.\n"
+            "Type **!help** to see what I can do!"
+        )
 
 @bot.event
 async def on_message(message):
@@ -88,15 +114,18 @@ async def on_message(message):
 
         try:
             origin_msg = await bot.wait_for('message', check=check, timeout=20)
+            #it gives the proper official line name.
             origin = origin_msg.content.strip()
-
+            origin_norm = normalize_station(origin)
             # Ask for destination
-            await message.channel.send(f"➡️ Where are you going from **{origin.title()}**?")
+            await message.channel.send(f"➡️ Where are you going from **{origin_norm}**?")
             dest_msg = await bot.wait_for('message', check=check, timeout=20)
+            #So that the gives the proper offical line name.
             destination = dest_msg.content.strip()
+            destination_norm = normalize_station(destination)
 
             await message.channel.send(
-                f"Fetching the **next train** from **{origin.title()} → {destination.title()}**…"
+                f"Fetching the **next train** from **{origin_norm} → {destination_norm}**…"
             )
 
             status_message = await get_next_train(origin, destination)
@@ -111,17 +140,27 @@ async def on_message(message):
         result = await stationList()
         await message.channel.send(result)
 
+    elif "!help" in content:
+        help_text = "**Available Commands:**\n\n"
+
+        HELP_DICT = {
+            "!lansdale line status": "Shows delay info for the Lansdale line.",
+            "!regional rail status": "Shows live delays for all Regional Rail trains.",
+            "!check line status": "Lets you check any specific train line.",
+            "!next train": "Shows the next train between two stations.",
+            "!stations": "Lists all Regional Rail stations.",
+            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
+        }
+
+        for cmd, desc in HELP_DICT.items():
+            help_text += f"{cmd} — {desc}\n"
+
+        await message.channel.send(help_text)
+
     # Allow commands to still work if added later
     await bot.process_commands(message)
 
-# now you don't need to wait for input
-@bot.event
-async def on_ready():
-    await stationList()     # fills STATIONS_CACHE
-    print("Loaded station cache.")
-    print(f"Stations found: {len(STATIONS_CACHE)}")
-    print(f'Logged in as {bot.user.name} - {bot.user.id}')
-    print('------')
+
 
 # Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)
