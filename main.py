@@ -3,8 +3,31 @@ from discord.ext import commands
 import logging
 from dotenv import load_dotenv
 import os
+import aiohttp
+from Septa_Api import (
+    get_regional_rail_status,
+    get_lansdale_status,
+    get_line_status,
+    get_next_train ,
+    stationList,
+)
+from Stations import normalize_station
 
-# --- Setup ---
+
+COMMAND_LIST = []
+
+def register(cmd_name: str):
+    COMMAND_LIST.append(cmd_name)
+
+register("!lansdale line status")
+register("!regional rail status")
+register("!check line status")
+register("!next train")
+register("!stations")
+register("!help")
+
+
+# Setup 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 
@@ -12,36 +35,140 @@ if not token:
     print("Error: DISCORD_TOKEN not found. Check your .env file.")
     exit()
 
-# --- Logging ---
+# Logging 
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
-# --- Intents ---
+# Intents 
 intents = discord.Intents.default()
-intents.message_content = True  # REQUIRES ENABLING ON DEV PORTAL
-intents.members = True          # REQUIRES ENABLING ON DEV PORTAL
+intents.message_content = True  
+intents.members = True    
 
-# --- Bot Initialization ---
-bot = commands.Bot(command_prefix='!', intents=intents)
+# Bot Initialization
+# use help_command = None so the helpers command won't show up.
+bot = commands.Bot(command_prefix='!', intents=intents,help_command = None )
 
-# --- Events ---
+
+
+# # Events
 @bot.event
 async def on_ready():
+    print("Bot is online!")
     print(f'Logged in as {bot.user.name} - {bot.user.id}')
     print('------')
 
+    channel_id = 1437230785072463882
+    channel = bot.get_channel(channel_id)
+
+    if channel:
+        await channel.send(
+            "**👋 Hey! I'm the SEPTA Status Bot.**\n"
+            "I can check train delays, next arrivals, and station information.\n"
+            "Type **!help** to see what I can do!"
+        )
+
 @bot.event
 async def on_message(message):
-    # Don't let the bot respond to itself
+    current_status = "Bad , very heavy load"
     if message.author == bot.user:
         return
-    
-    # Check for the message content in lowercase
-    if "!lansdale line status" in message.content.lower():
-        await message.channel.send(f'As of September 5th 2025, 5:45pm:\n the Lansdale Line is running 210 minutes late!')
 
-    # This is important for running any other commands
+    content = message.content.lower()
+
+    #      LANSDLE LINE STATUS        #
+    if "!lansdale line status" in content:
+        await message.channel.send("Fetching Lansdale Line train status… ")
+        status_message = await get_lansdale_status()
+        await message.channel.send(status_message)
+
+    #      REGIONAL RAIL STATUS       #
+    elif "!regional rail status" in content:
+        await message.channel.send("Fetching live SEPTA Regional Rail status… ")
+        status_message = await get_regional_rail_status()
+        await message.channel.send(status_message)
+
+    #       CHECK ANY LINE STATUS     #
+    elif "!check line status" in content:
+        await message.channel.send("Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
+
+        def check(m):
+            return m.author == message.author and m.channel == message.channel
+
+        try:
+            user_msg = await bot.wait_for('message', check=check, timeout=20)
+            line_name = user_msg.content.strip()
+            await message.channel.send(f"Fetching {line_name.title()} Line status… ")
+
+            status_message = await get_line_status(line_name)
+            await message.channel.send(status_message)
+
+        except Exception:
+            await message.channel.send("⏰ You didn’t reply in time or an error occurred. Try again.")
+
+    #       NEXT TRAIN FEATURE        #
+    elif "!next train" in content:
+        def check(m):
+            return m.author == message.author and m.channel == message.channel
+
+        # Ask for origin
+        await message.channel.send("What station are you getting on at?")
+
+        try:
+            origin_msg = await bot.wait_for('message', check=check, timeout=20)
+            #it gives the proper official line name.
+            origin = origin_msg.content.strip()
+            origin_norm = normalize_station(origin)
+            #The hint
+            if origin_norm.lower() != origin.lower():
+                await message.channel.send(f"Did you mean **{origin_norm}**? (auto-corrected)")
+            # Ask for destination
+            await message.channel.send(f"➡️ Where are you going from **{origin_norm}**?")
+            dest_msg = await bot.wait_for('message', check=check, timeout=20)
+            #So that the gives the proper offical line name.
+            destination = dest_msg.content.strip()
+            destination_norm = normalize_station(destination)
+
+            #hint
+            if destination_norm.lower() != destination.lower():
+                await message.channel.send(f"Did you mean **{destination_norm}**? (auto-corrected)")
+
+            await message.channel.send(
+                f"Fetching the **next train** from **{origin_norm} → {destination_norm}**…"
+            )
+
+            status_message = await get_next_train(origin, destination)
+            await message.channel.send(status_message)
+
+        except Exception:
+            await message.channel.send("⏰ You didn’t reply in time. Try again.")
+
+
+    elif "!stations" in content:
+        await message.channel.send("Fetching all Regional Rail stations…")
+        result = await stationList()
+        await message.channel.send(result)
+
+    elif "!help" in content:
+        help_text = "**Available Commands:**\n\n"
+
+        HELP_DICT = {
+            "!lansdale line status": "Shows delay info for the Lansdale line.",
+            "!regional rail status": "Shows live delays for all Regional Rail trains.",
+            "!check line status": "Lets you check any specific train line.",
+            "!next train": "Shows the next train between two stations.",
+            "!stations": "Lists all Regional Rail stations.",
+            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
+        }
+
+        for cmd, desc in HELP_DICT.items():
+            help_text += f"{cmd} — {desc}\n"
+
+        await message.channel.send(help_text)
+
+    # Allow commands to still work if added later
     await bot.process_commands(message)
 
-# --- Run Bot ---
-# This will send logs to 'discord.log'
+
+
+# Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)
+
