@@ -172,6 +172,8 @@ async def on_message(message):
             "!next train": "Shows the next train between two stations.",
             "!stations": "Lists all Regional Rail stations.",
             "!menu":"Shows the list of Regional Rail Line for user to select",
+            "!lines": "Shows what lines serve the station",
+
         }
 
         for cmd, desc in HELP_DICT.items():
