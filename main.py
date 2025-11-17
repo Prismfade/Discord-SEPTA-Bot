@@ -117,12 +117,19 @@ async def on_message(message):
             #it gives the proper official line name.
             origin = origin_msg.content.strip()
             origin_norm = normalize_station(origin)
+            #The hint
+            if origin_norm.lower() != origin.lower():
+                await message.channel.send(f"Did you mean **{origin_norm}**? (auto-corrected)")
             # Ask for destination
             await message.channel.send(f"➡️ Where are you going from **{origin_norm}**?")
             dest_msg = await bot.wait_for('message', check=check, timeout=20)
             #So that the gives the proper offical line name.
             destination = dest_msg.content.strip()
             destination_norm = normalize_station(destination)
+
+            #hint
+            if destination_norm.lower() != destination.lower():
+                await message.channel.send(f"Did you mean **{destination_norm}**? (auto-corrected)")
 
             await message.channel.send(
                 f"Fetching the **next train** from **{origin_norm} → {destination_norm}**…"

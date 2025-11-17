@@ -1,4 +1,5 @@
 
+import difflib
 
 #All the possible stations
 REGIONAL_RAIL_STATIONS = [
@@ -221,9 +222,33 @@ ALIASES = {
 def normalize_station(name: str):
     key = name.lower().strip()
 
-    # If the shortcut exists ,  return the real name
+    # Check if the input is one of our shortcuts (aliases)
     if key in ALIASES:
         return ALIASES[key]
 
-    # Otherwise return nicely formatted text
+    # Check if the user typed an exact real station name
+    for station in REGIONAL_RAIL_STATIONS:
+        if key == station.lower():
+            return station
+
+    # If it's not exact, try to guess the closest real station
+    suggestion = suggest_station(name)
+    if suggestion:
+        return suggestion
+
+    # If nothing matches, just return it cleaned up
     return name.title()
+
+
+def suggest_station(user_input):
+    # Try to find the closest real station
+    matches = difflib.get_close_matches(
+        user_input,
+        REGIONAL_RAIL_STATIONS,
+        n=1,
+        cutoff=0.6
+    )
+
+    if matches:
+        return matches[0]  # best guess
+    return None
