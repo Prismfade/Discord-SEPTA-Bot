@@ -18,13 +18,13 @@ COMMAND_LIST = []
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
-
-register("!lansdale line status")
+register("!help")
 register("!regional rail status")
 register("!check line status")
 register("!next train")
 register("!stations")
-register("!help")
+register("!menu")
+register("!lines")
 
 
 # Setup 
@@ -166,18 +166,44 @@ async def on_message(message):
         help_text = "**Available Commands:**\n\n"
 
         HELP_DICT = {
-            "!lansdale line status": "Shows delay info for the Lansdale line.",
+            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
             "!regional rail status": "Shows live delays for all Regional Rail trains.",
             "!check line status": "Lets you check any specific train line.",
             "!next train": "Shows the next train between two stations.",
             "!stations": "Lists all Regional Rail stations.",
-            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
+            "!menu":"Shows the list of Regional Rail Line for user to select",
         }
 
         for cmd, desc in HELP_DICT.items():
             help_text += f"{cmd} — {desc}\n"
 
         await message.channel.send(help_text)
+
+    elif "!lines" in content:
+        await message.channel.send("Which station do you want to check?")
+
+        def check(m):
+            return m.author == message.author and m.channel == message.channel
+
+        try:
+            user_msg = await bot.wait_for('message',check =check,timeout = 20)
+            station_raw = user_msg.content.strip()
+            station_norm = normalize_station(station_raw)
+
+            from Septa_Api import build_station_line_map
+            station_map = await build_station_line_map()
+
+            lines = station_map.get(station_norm)
+
+            if not lines:
+                await message.channel.send(f"No live data found for {station_norm}")
+            else:
+                msg= f"**Lines serving {station_norm}: **\n"
+                msg+= "\n".join(f" {line}"for line in sorted(lines))
+                await  message.channel.send(msg)
+
+        except Exception:
+            await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
     # Allow commands to still work if added later
     await bot.process_commands(message)

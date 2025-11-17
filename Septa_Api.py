@@ -178,3 +178,32 @@ async def get_next_train(origin, destination):
 async def stationList():
     # Just return the list
     return "\n".join(REGIONAL_RAIL_STATIONS)
+
+#mapping stations to the train lines
+async  def build_station_line_map():
+    url = "https://www3.septa.org/api/TrainView/index.php"
+    station_to_lines = {}
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.json()
+
+                for train in data:
+                    line = train.get("line","").strip()
+                    next_stop = train.get("nextstop","").strip()
+
+                    if not line or not next_stop:
+                        continue
+
+                    #capitalization
+                    next_stop = next_stop.title()
+                    line = line.title()
+
+                    #mapping it
+                    station_to_lines.setdefault(next_stop,set()).add(line)
+
+            return station_to_lines
+
+    except Exception as e:
+        return {}
