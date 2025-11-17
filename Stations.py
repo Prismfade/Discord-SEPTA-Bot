@@ -158,6 +158,12 @@ REGIONAL_RAIL_STATIONS = [
 
 #use Aliases for typo so user don't need to input everything
 ALIASES = {
+
+    #Some that my friend uses
+    "fox":  "Fox Chase",
+    "fx": "Fox Chase",
+    "fox ch": "Fox Chase",
+
     # 30th Street
     "30th": "30th Street Station",
     "30th st": "30th Street Station",
