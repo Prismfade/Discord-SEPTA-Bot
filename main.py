@@ -64,7 +64,8 @@ async def on_ready():
         await channel.send(
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, and station information.\n"
-            "Type **!help** to see what I can do!"
+            "Type **!help** to see what I can do!\n"
+            "O I I A I (Best GIF EVER) \n"
         )
 
 @bot.event
@@ -110,33 +111,53 @@ async def on_message(message):
         def check(m):
             return m.author == message.author and m.channel == message.channel
 
-        # Ask for origin
+        # ask for origin station
         await message.channel.send("What station are you getting on at?")
 
         try:
             origin_msg = await bot.wait_for('message', check=check, timeout=20)
-            #it gives the proper official line name.
-            origin = origin_msg.content.strip()
-            origin_norm = normalize_station(origin)
-            #The hint
-            if origin_norm.lower() != origin.lower():
-                await message.channel.send(f"Did you mean **{origin_norm}**? (auto-corrected)")
-            # Ask for destination
+            origin_raw = origin_msg.content.strip()
+            origin_norm = normalize_station(origin_raw)
+
+            # hint if bot auto-corrected
+            if origin_norm.lower() != origin_raw.lower():
+                await message.channel.send(f"Did you mean **{origin_norm}**?")
+
+            # ask for destination
             await message.channel.send(f"➡️ Where are you going from **{origin_norm}**?")
             dest_msg = await bot.wait_for('message', check=check, timeout=20)
-            #So that the gives the proper offical line name.
-            destination = dest_msg.content.strip()
-            destination_norm = normalize_station(destination)
+            dest_raw = dest_msg.content.strip()
+            dest_norm = normalize_station(dest_raw)
 
-            #hint
-            if destination_norm.lower() != destination.lower():
-                await message.channel.send(f"Did you mean **{destination_norm}**? (auto-corrected)")
+            # hint if bot auto-corrected
+            if dest_norm.lower() != dest_raw.lower():
+                await message.channel.send(f"Did you mean **{dest_norm}**?")
 
+            # ask user if they want to use the corrected names
             await message.channel.send(
-                f"Fetching the **next train** from **{origin_norm} → {destination_norm}**…"
+                "Use the corrected names?\n"
+                f"- {origin_norm}\n"
+                f"- {dest_norm}\n"
+                "(yes / no)"
             )
 
-            status_message = await get_next_train(origin, destination)
+            confirm = await bot.wait_for('message', check=check, timeout=15)
+            ans = confirm.content.lower()
+
+            # decide which names to use
+            if ans.startswith("y"):
+                origin_final = origin_norm
+                dest_final = dest_norm
+            else:
+                origin_final = origin_raw
+                dest_final = dest_raw
+
+            # fetch train
+            await message.channel.send(
+                f"Fetching the next train from **{origin_final} → {dest_final}**…"
+            )
+
+            status_message = await get_next_train(origin_final, dest_final)
             await message.channel.send(status_message)
 
         except Exception:
