@@ -1,4 +1,16 @@
-[2025-11-17 11:47:58] [INFO    ] discord.client: logging in using static token
-[2025-11-17 11:47:59] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: dda9e70d190890f4481a5b18507d4673).
-[2025-11-17 11:48:21] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+[2025-11-17 12:04:32] [INFO    ] discord.client: logging in using static token
+[2025-11-17 12:04:36] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: dab2f90112ac201d6b4d7b04a3d958c6).
+[2025-11-17 12:04:45] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "get_lansdale_status" is not found
+[2025-11-17 12:05:00] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "get_lansdale_status" is not found
+[2025-11-17 12:05:20] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
 discord.ext.commands.errors.CommandNotFound: Command "help" is not found
+[2025-11-17 12:05:22] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "get" is not found
+[2025-11-17 12:05:35] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "get" is not found
+[2025-11-17 12:06:14] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "check" is not found
+[2025-11-17 12:06:39] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "check" is not found

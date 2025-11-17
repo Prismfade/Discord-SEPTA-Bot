@@ -7,7 +7,6 @@ import os
 import aiohttp
 from Septa_Api import (
     get_regional_rail_status,
-    get_lansdale_status,
     get_line_status,
     get_next_train ,
     stationList,
@@ -76,14 +75,8 @@ async def on_message(message):
 
     content = message.content.lower()
 
-    #      LANSDLE LINE STATUS        #
-    if "!lansdale line status" in content:
-        await message.channel.send("Fetching Lansdale Line train status… ")
-        status_message = await get_lansdale_status()
-        await message.channel.send(status_message)
-
     #      REGIONAL RAIL STATUS       #
-    elif "!regional rail status" in content:
+    if "!regional rail status" in content:
         await message.channel.send("Fetching live SEPTA Regional Rail status… ")
         status_message = await get_regional_rail_status()
         await message.channel.send(status_message)
