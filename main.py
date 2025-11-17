@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
+from Select_menu import LineView
 import os
 import aiohttp
 from Septa_Api import (
@@ -167,7 +168,11 @@ async def on_message(message):
     # Allow commands to still work if added later
     await bot.process_commands(message)
 
+@bot.command()
+async def menu(ctx):
+    await ctx.send("Select a regional rail **line**:", view=LineView())
 
+    
 
 # Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)
