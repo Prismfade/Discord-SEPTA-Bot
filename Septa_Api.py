@@ -207,3 +207,88 @@ async  def build_station_line_map():
 
     except Exception as e:
         return {}
+
+async def get_station_arrivals(station_name):
+
+    # Convert whatever the user typed into a proper station name
+    station = normalize_station(station_name)
+    url = "https://www3.septa.org/api/TrainView/index.php"
+
+    arrivals = []
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.json()
+
+        # Helper: TrainView sometimes uses different spellings for stations.
+        # This converts all versions into one consistent name.
+        def normalize_nextstop(stop):
+            stop = stop.lower().strip()
+
+            # Temple has multiple formats in TrainView
+            if stop in ["temple u", "temple university", "temple"]:
+                return "Temple University"
+
+            # All other stations: title-case them
+            return stop.title()
+
+        # Loop through every train and see if it is coming to our station
+        for train in data:
+            next_stop_raw = train.get("nextstop", "").strip()
+            if not next_stop_raw:
+                continue
+
+            next_stop = normalize_nextstop(next_stop_raw)
+
+            if next_stop == station:
+                arrivals.append(train)
+
+        # No trains? Tell the user.
+        if not arrivals:
+            return f"No upcoming trains for {station}"
+
+        # Start building the message
+        message_lines = [f"Incoming trains for **{station}**:\n"]
+
+        # Sort trains by earliest arrival time
+        arrivals_sorted = sorted(
+            arrivals,
+            key=lambda t: int(t.get("due", "999") or 999)
+        )
+
+        for train in arrivals_sorted:
+            line = train.get("line", "Unknown Line").title()
+            train_no = train.get("trainno", "N/A")
+            due = train.get("due", "N/A")
+            delay = int(train.get("late", 0))
+
+            # Calculate the actual arrival time (right now + due minutes)
+            try:
+                due_minutes = int(due)
+                from datetime import datetime, timedelta
+                arrival_time = datetime.now() + timedelta(minutes=due_minutes)
+                arrival_str = arrival_time.strftime("%I:%M %p").lstrip("0")
+            except:
+                arrival_str = "N/A"
+
+            # Determine if it's late or on time
+            if delay == 0:
+                status = "On time ✅"
+            elif delay <= 5:
+                status = f"{delay} min late ⚠️"
+            else:
+                status = f"{delay} min late ⛔"
+
+            # Add info about this train to the message
+            message_lines.append(
+                f"🚆 **{line}**  Train **{train_no}**\n"
+                f"Arriving in **{due} min** (at **{arrival_str}**)\n"
+                f"Status: {status}\n"
+            )
+
+        # Return everything as a single message
+        return "\n".join(message_lines)
+
+    except Exception as e:
+        return f"Error fetching arrivals: {e}"

@@ -8,8 +8,8 @@ import aiohttp
 from Septa_Api import (
     get_regional_rail_status,
     get_line_status,
-    get_next_train ,
-    stationList,
+    get_next_train,
+    stationList, get_station_arrivals,
 )
 from Stations import normalize_station
 
@@ -193,14 +193,8 @@ async def on_message(message):
             from Septa_Api import build_station_line_map
             station_map = await build_station_line_map()
 
-            lines = station_map.get(station_norm)
-
-            if not lines:
-                await message.channel.send(f"No live data found for {station_norm}")
-            else:
-                msg= f"**Lines serving {station_norm}: **\n"
-                msg+= "\n".join(f" {line}"for line in sorted(lines))
-                await  message.channel.send(msg)
+            result = await get_station_arrivals(station_norm)
+            await message.channel.send(result)
 
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")

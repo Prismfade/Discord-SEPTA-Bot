@@ -1,6 +1,4 @@
-[2025-11-17 17:58:37] [INFO    ] discord.client: logging in using static token
-[2025-11-17 17:58:38] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 59bb144f7a846f8a0123d4b7f216f9db).
-[2025-11-17 17:58:45] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
-discord.ext.commands.errors.CommandNotFound: Command "lies" is not found
-[2025-11-17 17:58:49] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+[2025-11-17 18:27:34] [INFO    ] discord.client: logging in using static token
+[2025-11-17 18:27:34] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: a8b4931c34a7cd29ee5673a2db1427ee).
+[2025-11-17 18:27:40] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
 discord.ext.commands.errors.CommandNotFound: Command "lines" is not found
