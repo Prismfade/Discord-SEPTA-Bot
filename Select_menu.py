@@ -1,6 +1,6 @@
 import discord
 from discord.ui import View, Select
-
+import Stations
 # YOUR LINE + STATIONS DICTIONARY HERE
 LINE_STATIONS = {
     "Airport Line": [
