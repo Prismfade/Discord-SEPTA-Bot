@@ -263,6 +263,8 @@ async def get_station_arrivals(station_name):
             due = train.get("due", "N/A")
             delay = int(train.get("late", 0))
 
+
+
             # Calculate the actual arrival time (right now + due minutes)
             try:
                 due_minutes = int(due)
@@ -272,13 +274,20 @@ async def get_station_arrivals(station_name):
             except:
                 arrival_str = "N/A"
 
+
+
             # Determine if it's late or on time
             if delay == 0:
                 status = "On time ✅"
             elif delay <= 5:
                 status = f"{delay} min late ⚠️"
             else:
-                status = f"{delay} min late ⛔"
+                being_cancel = "Canceled 😡"
+                if delay >= 999:
+                    status = f"{being_cancel}"
+                else :
+                    status = f"{delay} min late ⛔"
+
 
             # Add info about this train to the message
             message_lines.append(
