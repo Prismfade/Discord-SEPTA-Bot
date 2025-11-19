@@ -2,14 +2,14 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
+from Select_menu import LineView
 import os
 import aiohttp
 from Septa_Api import (
     get_regional_rail_status,
-    get_lansdale_status,
     get_line_status,
-    get_next_train ,
-    stationList,
+    get_next_train,
+    stationList, get_station_arrivals,
 )
 from Stations import normalize_station
 
@@ -18,13 +18,13 @@ COMMAND_LIST = []
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
-
-register("!lansdale line status")
+register("!help")
 register("!regional rail status")
 register("!check line status")
 register("!next train")
 register("!stations")
-register("!help")
+register("!menu")
+register("!lines")
 
 
 # Setup 
@@ -63,7 +63,8 @@ async def on_ready():
         await channel.send(
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, and station information.\n"
-            "Type **!help** to see what I can do!"
+            "Type **!help** to see what I can do!\n"
+            "O I I A I (Best GIF EVER) \n"
         )
 
 @bot.event
@@ -74,14 +75,8 @@ async def on_message(message):
 
     content = message.content.lower()
 
-    #      LANSDLE LINE STATUS        #
-    if "!lansdale line status" in content:
-        await message.channel.send("Fetching Lansdale Line train status… ")
-        status_message = await get_lansdale_status()
-        await message.channel.send(status_message)
-
     #      REGIONAL RAIL STATUS       #
-    elif "!regional rail status" in content:
+    if "!regional rail status" in content:
         await message.channel.send("Fetching live SEPTA Regional Rail status… ")
         status_message = await get_regional_rail_status()
         await message.channel.send(status_message)
@@ -105,42 +100,83 @@ async def on_message(message):
             await message.channel.send("⏰ You didn’t reply in time or an error occurred. Try again.")
 
     #       NEXT TRAIN FEATURE        #
-    elif "!next train" in content:
+    #elif content("!next train"):
+    elif content.startswith("!next train"):
+        # remove the command and check if user typed origin + destination in same line
+        user_input = content.replace("!next train", "").strip()
+        parts = user_input.split()
+
+        # user typed both stations (skip asking questions)
+        if len(parts) >= 2:
+            origin_raw = parts[0]
+            dest_raw = " ".join(parts[1:])  # allow multi-word stations later too
+
+            origin_norm = normalize_station(origin_raw)
+            dest_norm = normalize_station(dest_raw)
+
+            await message.channel.send(
+                f"Fetching the next train from **{origin_norm} → {dest_norm}**…"
+            )
+
+            status_message = await get_next_train(origin_norm, dest_norm)
+            await message.channel.send(status_message)
+            return
+
+        # user did NOT type stations → original step-by-step flow
         def check(m):
             return m.author == message.author and m.channel == message.channel
 
-        # Ask for origin
+        # ask for origin station
         await message.channel.send("What station are you getting on at?")
 
         try:
             origin_msg = await bot.wait_for('message', check=check, timeout=20)
-            #it gives the proper official line name.
-            origin = origin_msg.content.strip()
-            origin_norm = normalize_station(origin)
-            #The hint
-            if origin_norm.lower() != origin.lower():
-                await message.channel.send(f"Did you mean **{origin_norm}**? (auto-corrected)")
-            # Ask for destination
+            origin_raw = origin_msg.content.strip()
+            origin_norm = normalize_station(origin_raw)
+
+            # typo hint
+            if origin_norm.lower() != origin_raw.lower():
+                await message.channel.send(f"Did you mean **{origin_norm}**?")
+
+            # ask for destination
             await message.channel.send(f"➡️ Where are you going from **{origin_norm}**?")
             dest_msg = await bot.wait_for('message', check=check, timeout=20)
-            #So that the gives the proper offical line name.
-            destination = dest_msg.content.strip()
-            destination_norm = normalize_station(destination)
+            dest_raw = dest_msg.content.strip()
+            dest_norm = normalize_station(dest_raw)
 
-            #hint
-            if destination_norm.lower() != destination.lower():
-                await message.channel.send(f"Did you mean **{destination_norm}**? (auto-corrected)")
+            # typo hint
+            if dest_norm.lower() != dest_raw.lower():
+                await message.channel.send(f"Did you mean **{dest_norm}**?")
 
+            # ask if they want corrected names
             await message.channel.send(
-                f"Fetching the **next train** from **{origin_norm} → {destination_norm}**…"
+                "Use the corrected names?\n"
+                f"- {origin_norm}\n"
+                f"- {dest_norm}\n"
+                "(yes / no)"
             )
 
-            status_message = await get_next_train(origin, destination)
+            confirm = await bot.wait_for('message', check=check, timeout=15)
+            ans = confirm.content.lower()
+
+            # pick which ones to actually use
+            if ans.startswith("y"):
+                origin_final = origin_norm
+                dest_final = dest_norm
+            else:
+                origin_final = origin_raw
+                dest_final = dest_raw
+
+            # fetch train
+            await message.channel.send(
+                f"Fetching the next train from **{origin_final} → {dest_final}**…"
+            )
+
+            status_message = await get_next_train(origin_final, dest_final)
             await message.channel.send(status_message)
 
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
-
 
     elif "!stations" in content:
         await message.channel.send("Fetching all Regional Rail stations…")
@@ -151,12 +187,14 @@ async def on_message(message):
         help_text = "**Available Commands:**\n\n"
 
         HELP_DICT = {
-            "!lansdale line status": "Shows delay info for the Lansdale line.",
+            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
             "!regional rail status": "Shows live delays for all Regional Rail trains.",
             "!check line status": "Lets you check any specific train line.",
             "!next train": "Shows the next train between two stations.",
             "!stations": "Lists all Regional Rail stations.",
-            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
+            "!menu":"Shows the list of Regional Rail Line for user to select",
+            "!lines": "Shows what lines serve the station",
+
         }
 
         for cmd, desc in HELP_DICT.items():
@@ -164,10 +202,34 @@ async def on_message(message):
 
         await message.channel.send(help_text)
 
+    elif "!lines" in content:
+        await message.channel.send("Which station do you want to check?")
+
+        def check(m):
+            return m.author == message.author and m.channel == message.channel
+
+        try:
+            user_msg = await bot.wait_for('message',check =check,timeout = 20)
+            station_raw = user_msg.content.strip()
+            station_norm = normalize_station(station_raw)
+
+            from Septa_Api import build_station_line_map
+            station_map = await build_station_line_map()
+
+            result = await get_station_arrivals(station_norm)
+            await message.channel.send(result)
+
+        except Exception:
+            await message.channel.send("⏰ You didn’t reply in time. Try again.")
+
     # Allow commands to still work if added later
     await bot.process_commands(message)
 
+@bot.command()
+async def menu(ctx):
+    await ctx.send("Select a regional rail **line**:", view=LineView())
 
+    
 
 # Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)

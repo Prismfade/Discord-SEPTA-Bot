@@ -158,6 +158,12 @@ REGIONAL_RAIL_STATIONS = [
 
 #use Aliases for typo so user don't need to input everything
 ALIASES = {
+
+    #Some that my friend uses
+    "fox":  "Fox Chase",
+    "fx": "Fox Chase",
+    "fox ch": "Fox Chase",
+
     # 30th Street
     "30th": "30th Street Station",
     "30th st": "30th Street Station",
@@ -222,33 +228,73 @@ ALIASES = {
 def normalize_station(name: str):
     key = name.lower().strip()
 
-    # Check if the input is one of our shortcuts (aliases)
+    # Check alias shortcuts
     if key in ALIASES:
         return ALIASES[key]
 
-    # Check if the user typed an exact real station name
+    # Perfect match
     for station in REGIONAL_RAIL_STATIONS:
         if key == station.lower():
             return station
 
-    # If it's not exact, try to guess the closest real station
+    # Fuzzy guess
+
     suggestion = suggest_station(name)
     if suggestion:
         return suggestion
 
-    # If nothing matches, just return it cleaned up
+    # Fallback
     return name.title()
 
 
+
+
 def suggest_station(user_input):
-    # Try to find the closest real station
+    user_input = user_input.lower().strip()
+
+    #all the possible ways to fix the typo
+
+    if user_input.startswith("tem"):
+        return "Temple University"
+
+    if user_input.startswith("f") and "h" not in user_input:
+        return "Fox Chase"
+
+    if user_input.startswith("sub"):
+        return "Suburban Station"
+
+    if user_input.startswith("jef"):
+        return "Jefferson Station"
+
+    if user_input.startswith("nor") and "tc" in user_input:
+        return "Norristown Transportation Center"
+
+
+
+    # First get a few possible close matches
     matches = difflib.get_close_matches(
         user_input,
-        REGIONAL_RAIL_STATIONS,
-        n=1,
-        cutoff=0.6
+        [s.lower() for s in REGIONAL_RAIL_STATIONS],
+        n=3,
+        cutoff=0.4
     )
 
-    if matches:
-        return matches[0]  # best guess
-    return None
+    if not matches:
+        return None
+
+    # Convert back to original capitalization
+    matches = [
+        station for station in REGIONAL_RAIL_STATIONS
+        if station.lower() in matches
+    ]
+
+    # Prefer matches that start with the same letter
+    same_letter = [
+        s for s in matches
+        if s[0].lower() == user_input[0].lower()
+    ]
+    if same_letter:
+        return same_letter[0]
+
+    # Otherwise return the best fuzzy match
+    return matches[0]
