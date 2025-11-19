@@ -100,7 +100,28 @@ async def on_message(message):
             await message.channel.send("⏰ You didn’t reply in time or an error occurred. Try again.")
 
     #       NEXT TRAIN FEATURE        #
-    elif "!next train" in content:
+    elif content.startswith("!next train"):
+        # remove the command and check if user typed origin + destination in same line
+        user_input = content.replace("!next train", "").strip()
+        parts = user_input.split()
+
+        # user typed both stations (skip asking questions)
+        if len(parts) >= 2:
+            origin_raw = parts[0]
+            dest_raw = " ".join(parts[1:])  # allow multi-word stations later too
+
+            origin_norm = normalize_station(origin_raw)
+            dest_norm = normalize_station(dest_raw)
+
+            await message.channel.send(
+                f"Fetching the next train from **{origin_norm} → {dest_norm}**…"
+            )
+
+            status_message = await get_next_train(origin_norm, dest_norm)
+            await message.channel.send(status_message)
+            return
+
+        # user did NOT type stations → original step-by-step flow
         def check(m):
             return m.author == message.author and m.channel == message.channel
 
@@ -112,7 +133,7 @@ async def on_message(message):
             origin_raw = origin_msg.content.strip()
             origin_norm = normalize_station(origin_raw)
 
-            # hint if bot auto-corrected
+            # typo hint
             if origin_norm.lower() != origin_raw.lower():
                 await message.channel.send(f"Did you mean **{origin_norm}**?")
 
@@ -122,11 +143,11 @@ async def on_message(message):
             dest_raw = dest_msg.content.strip()
             dest_norm = normalize_station(dest_raw)
 
-            # hint if bot auto-corrected
+            # typo hint
             if dest_norm.lower() != dest_raw.lower():
                 await message.channel.send(f"Did you mean **{dest_norm}**?")
 
-            # ask user if they want to use the corrected names
+            # ask if they want corrected names
             await message.channel.send(
                 "Use the corrected names?\n"
                 f"- {origin_norm}\n"
@@ -137,7 +158,7 @@ async def on_message(message):
             confirm = await bot.wait_for('message', check=check, timeout=15)
             ans = confirm.content.lower()
 
-            # decide which names to use
+            # pick which ones to actually use
             if ans.startswith("y"):
                 origin_final = origin_norm
                 dest_final = dest_norm
@@ -155,7 +176,6 @@ async def on_message(message):
 
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
-
 
     elif "!stations" in content:
         await message.channel.send("Fetching all Regional Rail stations…")
