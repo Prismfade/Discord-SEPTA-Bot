@@ -2,15 +2,25 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
-from Select_menu import LineView
 import os
 import aiohttp
+
+from Select_menu import (
+    LineView,
+    build_subscribe_line_view,
+    build_unsubscribe_view
+)
 from Septa_Api import (
     get_regional_rail_status,
     get_line_status,
     get_next_train,
     stationList, get_station_arrivals,
 )
+from Line_Subscription import (
+    subscribe_to_line,
+    unsubscribe_to_line,
+    get_user_subscriptions,
+)    
 from Stations import normalize_station
 
 
@@ -221,6 +231,27 @@ async def on_message(message):
 
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
+
+    elif "!subscribe" in content:
+        view = await build_subscribe_line_view()
+        await message.channel.send(
+            "Select a regional rail line to subscribe to:",
+            view=view
+        )
+
+    elif "!unsubscribe" in content:
+        user_subs = await get_user_subscriptions(message.author.id)
+        if not user_subs:
+            await message.channel.send(
+                "❌ You aren't subscribed to any lines. Use `!subscribe` instead."
+            )
+            return
+
+        view = await build_unsubscribe_view(user_subs)
+        await message.channel.send(
+            "Here are your current line subscriptions:",
+            view=view
+        )
 
     # Allow commands to still work if added later
     await bot.process_commands(message)
