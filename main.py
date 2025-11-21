@@ -189,27 +189,6 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
-    elif "/subscribe" in content:
-        view = await build_subscribe_line_view()
-        await message.channel.send(
-            "Select a regional rail line to subscribe to:",
-            view=view
-        )
-
-    elif "/unsubscribe" in content:
-        user_subs = await get_user_subscriptions(message.author.id)
-        if not user_subs:
-            await message.channel.send(
-                "❌ You aren't subscribed to any lines. Use `!subscribe` instead."
-            )
-            return
-
-        view = await build_unsubscribe_view(user_subs)
-        await message.channel.send(
-            "Here are your current line subscriptions:",
-            view=view
-        )
-
     elif "/stations" in content:
         await message.channel.send("Fetching all Regional Rail stations…")
         result = await stationList()
