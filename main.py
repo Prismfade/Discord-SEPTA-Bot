@@ -2,7 +2,11 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
-from Select_menu import LineView
+from Select_menu import (
+    LineView,
+    build_subscribe_line_view,
+    build_unsubscribe_view
+)
 from dynamic_station import fetch_line_station_map
 import os
 import random
@@ -13,8 +17,12 @@ from Septa_Api import (
     get_next_train,
     stationList, get_station_arrivals,
 )
+from Line_Subscription import (
+    subscribe_to_line,
+    unsubscribe_to_line,
+    get_user_subscriptions,
+)    
 from Stations import normalize_station
-
 
 COMMAND_LIST = []
 
@@ -181,6 +189,27 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
+    elif "!subscribe" in content:
+        view = await build_subscribe_line_view()
+        await message.channel.send(
+            "Select a regional rail line to subscribe to:",
+            view=view
+        )
+
+    elif "!unsubscribe" in content:
+        user_subs = await get_user_subscriptions(message.author.id)
+        if not user_subs:
+            await message.channel.send(
+                "❌ You aren't subscribed to any lines. Use `!subscribe` instead."
+            )
+            return
+
+        view = await build_unsubscribe_view(user_subs)
+        await message.channel.send(
+            "Here are your current line subscriptions:",
+            view=view
+        )
+
     elif "!stations" in content:
         await message.channel.send("Fetching all Regional Rail stations…")
         result = await stationList()
@@ -263,4 +292,3 @@ async def menu(ctx):
 
 # Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)
-
