@@ -6,30 +6,65 @@ from Line_Subscription import (
     unsubscribe_to_line
 )
 from dynamic_station import fetch_line_station_map
+from Septa_Api import get_line_status
+
+USER_SELECTIONS = {}
 
 
 
-# YOUR LINE + STATIONS DICTIONARY HERE
 
+from Septa_Api import get_station_arrivals
 
 class StationSelect(Select):
     def __init__(self, stations):
-        #no longer needed
-        # stations = LINE_STATIONS[line_name][:25]
         stations = stations[:25]
         super().__init__(
             placeholder="Select a station",
             options=[discord.SelectOption(label=s) for s in stations]
         )
-        # self.line_name = line_name
         self.stations = stations
 
     async def callback(self, interaction):
         station = self.values[0]
-        await interaction.response.send_message(
-            f"🚉 You selected **{station}**",
-            ephemeral=True
-        )
+        user_id = interaction.user.id
+
+        # load stored line
+        selection = USER_SELECTIONS.get(user_id, {})
+        line_name = selection.get("line")
+
+        # save station
+        selection["station"] = station
+        USER_SELECTIONS[user_id] = selection
+
+        # fetch arrivals
+        arrivals_text = await get_station_arrivals(station)
+
+        # detect if there are NO approaching trains
+        no_trains = "No upcoming trains for" in arrivals_text
+
+        # fetch line status as well
+        from Septa_Api import get_line_status
+        line_status = await get_line_status(line_name)
+
+        # build clean Option D output
+        if no_trains:
+            final_message = (
+                f"🛤 **{line_name}** → **{station}**\n\n"
+                f"📡 **Station Status:**\n"
+                f"No upcoming trains currently approaching **{station}**.\n\n"
+                f"📈 **Line Status:**\n"
+                f"{line_status}"
+            )
+        else:
+            # normal case: trains exist
+            final_message = (
+                f"🛤 **{line_name}** → **{station}**\n\n"
+                f"{arrivals_text}"
+            )
+
+        await interaction.response.send_message(final_message, ephemeral=False)
+
+
 
 
 class StationView(View):
@@ -54,10 +89,22 @@ class LineSelect(Select):
     async def callback(self, interaction):
         line_name = self.values[0]
         stations = self.line_map[line_name]     # get stations from dynamic map
+
+        # save user selected line
+        USER_SELECTIONS[interaction.user.id] = {"line": line_name}
+
+        #give the live line status
+        status_text = await get_line_status(line_name)
+
+        #make it readable
+        station_list = "\n".join(f"- {s}" for s in stations)
+
         await interaction.response.send_message(
-            f"Selected {line_name}",
-            view=StationView(stations),
-            ephemeral=True
+            f"🛤 **{line_name} Line Info**\n\n"
+        f"**Status:**\n{status_text}\n\n"
+        f"**Stations served:**\n{station_list}",
+        view= StationView(stations),
+        ephemeral=True
         )
 
     # async def callback(self, interaction):
