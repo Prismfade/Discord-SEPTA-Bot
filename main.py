@@ -29,13 +29,13 @@ COMMAND_LIST = []
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
-register("!help")
-register("!regional rail status")
-register("!check line status")
-register("!next train")
-register("!stations")
-register("!menu")
-register("!lines")
+register("/help")
+register("/regional rail status")
+register("/check line status")
+register("/next train")
+register("/stations")
+register("/menu")
+register("/lines")
 
 
 # Setup 
@@ -87,13 +87,13 @@ async def on_message(message):
     content = message.content.lower()
 
     #      REGIONAL RAIL STATUS       #
-    if "!regional rail status" in content:
+    if "/regional rail status" in content:
         await message.channel.send("Fetching live SEPTA Regional Rail status… ")
         status_message = await get_regional_rail_status()
         await message.channel.send(status_message)
 
     #       CHECK ANY LINE STATUS     #
-    elif "!check line status" in content:
+    elif "/check line status" in content:
         await message.channel.send("Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
 
         def check(m):
@@ -189,14 +189,14 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
-    elif "!subscribe" in content:
+    elif "/subscribe" in content:
         view = await build_subscribe_line_view()
         await message.channel.send(
             "Select a regional rail line to subscribe to:",
             view=view
         )
 
-    elif "!unsubscribe" in content:
+    elif "/unsubscribe" in content:
         user_subs = await get_user_subscriptions(message.author.id)
         if not user_subs:
             await message.channel.send(
@@ -210,22 +210,22 @@ async def on_message(message):
             view=view
         )
 
-    elif "!stations" in content:
+    elif "/stations" in content:
         await message.channel.send("Fetching all Regional Rail stations…")
         result = await stationList()
         await message.channel.send(result)
 
-    elif "!help" in content:
+    elif "/help" in content:
         help_text = "**Available Commands:**\n\n"
 
         HELP_DICT = {
-            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
-            "!regional rail status": "Shows live delays for all Regional Rail trains.",
-            "!check line status": "Lets you check any specific train line.",
-            "!next train": "Shows the next train between two stations.",
-            "!stations": "Lists all Regional Rail stations.",
-            "!menu":"Shows the list of Regional Rail Line for user to select",
-            "!lines": "Shows what lines serve the station",
+            "/help": "Shows this help menu.(You prob already know this but, I like putting it here)",
+            "/regional rail status": "Shows live delays for all Regional Rail trains.",
+            "/check line status": "Lets you check any specific train line.",
+            "/next train": "Shows the next train between two stations.",
+            "/stations": "Lists all Regional Rail stations.",
+            "/menu":"Shows the list of Regional Rail Line for user to select",
+            "/lines": "Shows what lines serve the station",
 
         }
 
@@ -234,7 +234,7 @@ async def on_message(message):
 
         await message.channel.send(help_text)
 
-    elif "!lines" in content:
+    elif "/lines" in content:
         await message.channel.send("Which station do you want to check?")
 
         def check(m):
