@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from Select_menu import LineView
 from dynamic_station import fetch_line_station_map
 import os
+import random
 import aiohttp
 from Septa_Api import (
     get_regional_rail_status,
@@ -66,7 +67,7 @@ async def on_ready():
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, and station information.\n"
             "Type **!help** to see what I can do!\n"
-            "O I I A I (Best GIF EVER) \n"
+            
         )
 
 @bot.event
@@ -223,6 +224,27 @@ async def on_message(message):
 
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
+
+    #dw about this
+    elif any(phrase in content for phrase in ["great job", "good bot", "awesome bot", "good job","good work","w cat","awesome cat"]):
+        user = message.author.display_name
+
+        responses = [
+            f"Thank you, {user}! 😊 I run smoother than SEPTA!",
+            f"Thanks, {user}! 🚆 I’m never late… unlike SEPTA 👀",
+            f"Appreciate it, {user}! 😄 My code stays on schedule!",
+            f"Thank you, {user}! 🤖 I was built different.",
+            f"Aww thanks, {user}! 😊 You're the real MVP.",
+            f"Thanks, {user}! 🙌 I run cleaner than SEPTA’s tracks!",
+            f"Cheers, {user}! 😄 My uptime > SEPTA reliability.",
+            f"O I I A I \<\<SPINNING TECHNIQUE\>\>"
+        ]
+
+        reply = random.choice(responses)
+        await message.channel.send(reply)
+        return
+
+
 
     # Allow commands to still work if added later
     await bot.process_commands(message)

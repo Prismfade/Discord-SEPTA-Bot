@@ -36,27 +36,59 @@ class StationSelect(Select):
         selection["station"] = station
         USER_SELECTIONS[user_id] = selection
 
-        # fetch arrivals
+        # fetch arrivals for this station
         arrivals_text = await get_station_arrivals(station)
 
-        # detect if there are NO approaching trains
+        # detect no trains
         no_trains = "No upcoming trains for" in arrivals_text
 
-        # fetch line status as well
+        # line status and all trains
         from Septa_Api import get_line_status
         line_status = await get_line_status(line_name)
 
-        # build clean Option D output
+        # fetch all train data to locate nearest train
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://www3.septa.org/api/TrainView/index.php") as response:
+                data = await response.json()
+
+        # find all trains on this line
+        line_trains = [
+            train for train in data
+            if line_name.lower() in train.get("line", "").lower()
+        ]
+
+        nearest_info = ""
+
+        if no_trains and line_trains:
+            # pick the first train on the line (TrainView is already ordered live)
+            t = line_trains[0]
+
+            train_no = t.get("trainno", "Unknown")
+            next_stop = t.get("nextstop", "Unknown").title()
+            delay = int(t.get("late", 0))
+
+            if delay == 0:
+                delay_text = "On time"
+            else:
+                delay_text = f"{delay} min late"
+
+            nearest_info = (
+                f"\n🚆 **Nearest train on this line:**\n"
+               f"**{line_name} Train {train_no}** -Next stop: **{next_stop}**\n"
+                f"Status: {delay_text}\n"
+            )
+
+        # build final clean message
         if no_trains:
             final_message = (
                 f"🛤 **{line_name}** → **{station}**\n\n"
                 f"📡 **Station Status:**\n"
-                f"No upcoming trains currently approaching **{station}**.\n\n"
-                f"📈 **Line Status:**\n"
-                f"{line_status}"
+                f"No upcoming trains currently approaching **{station}**.\n"
+                f"{nearest_info}"
+                f"\n📈 **Line Status:**\n{line_status}"
             )
         else:
-            # normal case: trains exist
             final_message = (
                 f"🛤 **{line_name}** → **{station}**\n\n"
                 f"{arrivals_text}"
