@@ -187,13 +187,13 @@ async def on_message(message):
         help_text = "**Available Commands:**\n\n"
 
         HELP_DICT = {
-            "!help": "Shows this help menu.(You prob already know this but, I like putting it here)",
-            "!regional rail status": "Shows live delays for all Regional Rail trains.",
-            "!check line status": "Lets you check any specific train line.",
-            "!next train": "Shows the next train between two stations.",
-            "!stations": "Lists all Regional Rail stations.",
-            "!menu":"Shows the list of Regional Rail Line for user to select",
-            "!lines": "Shows what lines serve the station",
+            "/help": "Shows this help menu.(You prob already know this but, I like putting it here)",
+            "/regional rail status": "Shows live delays for all Regional Rail trains.",
+            "/check line status": "Lets you check any specific train line.",
+            "/next train": "Shows the next train between two stations.",
+            "/stations": "Lists all Regional Rail stations.",
+            "/menu":"Shows the list of Regional Rail Line for user to select",
+            "/lines": "Shows what lines serve the station",
 
         }
 
