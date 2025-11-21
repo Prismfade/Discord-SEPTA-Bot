@@ -2,8 +2,14 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
-from Select_menu import LineView
+from Select_menu import (
+    LineView,
+    build_subscribe_line_view,
+    build_unsubscribe_view
+)
+from dynamic_station import fetch_line_station_map
 import os
+import random
 import aiohttp
 from Septa_Api import (
     get_regional_rail_status,
@@ -11,10 +17,15 @@ from Septa_Api import (
     get_next_train,
     stationList, get_station_arrivals,
 )
+from Line_Subscription import (
+    subscribe_to_line,
+    unsubscribe_to_line,
+    get_user_subscriptions,
+)    
 from Stations import normalize_station
 
-
 COMMAND_LIST = []
+
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
@@ -64,7 +75,7 @@ async def on_ready():
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, and station information.\n"
             "Type **!help** to see what I can do!\n"
-            "O I I A I (Best GIF EVER) \n"
+            
         )
 
 @bot.event
@@ -222,15 +233,41 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
+    #dw about this
+    elif any(phrase in content for phrase in ["great job", "good bot", "awesome bot", "good job","good work","w cat","awesome cat"]):
+        user = message.author.display_name
+
+        responses = [
+            f"Thank you, {user}! 😊 I run smoother than SEPTA!",
+            f"Thanks, {user}! 🚆 I’m never late… unlike SEPTA 👀",
+            f"Appreciate it, {user}! 😄 My code stays on schedule!",
+            f"Thank you, {user}! 🤖 I was built different.",
+            f"Aww thanks, {user}! 😊 You're the real MVP.",
+            f"Thanks, {user}! 🙌 I run cleaner than SEPTA’s tracks!",
+            f"Cheers, {user}! 😄 My uptime > SEPTA reliability.",
+            f"O I I A I \<\<SPINNING TECHNIQUE\>\>"
+        ]
+
+        reply = random.choice(responses)
+        await message.channel.send(reply)
+        return
+
+
+
     # Allow commands to still work if added later
     await bot.process_commands(message)
 
 @bot.command()
 async def menu(ctx):
-    await ctx.send("Select a regional rail **line**:", view=LineView())
+    # await ctx.send("Select a regional rail **line**:", view=LineView())
+    line_map = await fetch_line_station_map()
+
+    await ctx.send(
+        "Select a regional rail **line**:",
+        view = LineView(line_map)
+    )
 
     
 
 # Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)
-

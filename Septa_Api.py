@@ -30,49 +30,7 @@ async def get_regional_rail_status():
     except Exception as e:
         return f"Error fetching SEPTA data: {e}"
 
-
-# Fetch SEPTA Lansdale Line Status (Hardcoded Example)
-async def get_lansdale_status():
-    url = "https://www3.septa.org/api/TrainView/index.php"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    return f"Error: SEPTA API returned status {response.status}"
-
-                data = await response.json()
-
-                if not isinstance(data, list) or len(data) == 0:
-                    return "No train data available right now."
-
-                # Filter for Lansdale trains (Lansdale hardcoded)
-                lansdale_trains = [
-                    train for train in data
-                    if "lansdale" in train.get("line", "").lower()
-                ]
-
-                if not lansdale_trains:
-                    return "No Lansdale Line trains found."
-
-                # Summarize only trains that are late
-                delayed = []
-                for train in lansdale_trains:
-                    line = train.get("line", "Unknown Line")
-                    train_id = train.get("trainno", "Unknown Train")
-                    delay = train.get("late", 0)
-                    if delay > 0:
-                        delayed.append(f"🚆 {line} Train {train_id}: {delay} min late")
-
-                if not delayed:
-                    return "All Lansdale Line trains are on time ✅"
-
-                return "\n".join(delayed[:10])  # Limit output to 10 trains
-
-    except Exception as e:
-        return f"Error fetching SEPTA data: {e}"
-
-
-# Fetch SEPTA Line Status by Name
+# Fetch SEPTA Line Status by Name (Only trains running late)
 async def get_line_status(line_name):
     url = "https://www3.septa.org/api/TrainView/index.php"
     try:
@@ -104,12 +62,27 @@ async def get_line_status(line_name):
                         delayed.append(f"🚆 {line} Train {train_id}: {delay} min late")
 
                 if not delayed:
-                    return f"All {line_name.title()} Line trains are on time ✅"
+                    # return f"All {line_name.title()} Line trains are on time ✅"
+                    return f"Line is active and all trains are on time. ✅"
 
                 return "\n".join(delayed[:10])  # Limit to first 10 results
 
     except Exception as e:
         return f"Error fetching SEPTA data: {e}"
+    
+# Fetch SEPTA Line by Name (All trains)
+async def get_unique_regional_rail_lines():
+    url = "https://www3.septa.org/api/TrainView/index.php"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    return []
+                data = await response.json()
+                lines = {train.get("line", "").title() for train in data if train.get("line")}
+                return sorted(lines)
+    except Exception as e:
+        return []
 
 
 # Fetch Next Train Between Two Stations
