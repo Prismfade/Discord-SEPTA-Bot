@@ -5,100 +5,154 @@ from Line_Subscription import (
     subscribe_to_line,
     unsubscribe_to_line
 )
+from dynamic_station import fetch_line_station_map
+from Septa_Api import get_line_status
 
-# YOUR LINE + STATIONS DICTIONARY HERE
-LINE_STATIONS = {
-    "Airport Line": [
-        "30th Street Station",
-        "Suburban Station",
-        "Jefferson Station",
-        "Temple University",
-        "Eastwick",
-        "Airport Terminal A",
-        "Airport Terminal B",
-        "Airport Terminal C-D",
-        "Airport Terminal E-F"
-    ],
+USER_SELECTIONS = {}
 
-    "Lansdale/Doylestown Line": [
-        "Doylestown",
-        "Delaware Valley University",
-        "New Britain",
-        "Chalfont",
-        "Colmar",
-        "Fortuna",
-        "Hatfield",
-        "Lansdale",
-        "Pennbrook",
-        "North Wales",
-        "Gwynedd Valley",
-        "Penllyn",
-        "Ambler",
-        "Fort Washington",
-        "Oreland",
-        "Glenside",
-        "Jenkintown-Wyncote",
-        "Temple University",
-        "Jefferson Station",
-        "Suburban Station",
-        "30th Street Station"
-    ],
 
-    "Paoli/Thorndale Line": [
-        "Thorndale", "Downingtown", "Whitford", "Exton", "Malvern",
-        "Paoli", "Daylesford", "Berwyn", "Devon", "Strafford", "Wayne",
-        "St. Davids", "Radnor", "Villanova", "Rosemont", "Bryn Mawr",
-        "Haverford", "Ardmore", "Wynnewood", "Narberth", "Merion",
-        "Overbrook", "30th Street Station", "Suburban Station", "Jefferson Station"
-    ]
-    }
 
-LINE_OPTIONS = list(LINE_STATIONS.keys())
 
+from Septa_Api import get_station_arrivals
 
 class StationSelect(Select):
-    def __init__(self, line_name):
-        stations = LINE_STATIONS[line_name][:25]
+    def __init__(self, stations):
+        stations = stations[:25]
         super().__init__(
-            placeholder=f"Select a station on {line_name}",
+            placeholder="Select a station",
             options=[discord.SelectOption(label=s) for s in stations]
         )
-        self.line_name = line_name
+        self.stations = stations
 
     async def callback(self, interaction):
         station = self.values[0]
-        await interaction.response.send_message(
-            f"🚉 You selected **{station}** on **{self.line_name}**",
-            ephemeral=True
-        )
+        user_id = interaction.user.id
+
+        # load stored line
+        selection = USER_SELECTIONS.get(user_id, {})
+        line_name = selection.get("line")
+
+        # save station
+        selection["station"] = station
+        USER_SELECTIONS[user_id] = selection
+
+        # fetch arrivals for this station
+        arrivals_text = await get_station_arrivals(station)
+
+        # detect no trains
+        no_trains = "No upcoming trains for" in arrivals_text
+
+        # line status and all trains
+        from Septa_Api import get_line_status
+        line_status = await get_line_status(line_name)
+
+        # fetch all train data to locate nearest train
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://www3.septa.org/api/TrainView/index.php") as response:
+                data = await response.json()
+
+        # find all trains on this line
+        line_trains = [
+            train for train in data
+            if line_name.lower() in train.get("line", "").lower()
+        ]
+
+        nearest_info = ""
+
+        if no_trains and line_trains:
+            # pick the first train on the line (TrainView is already ordered live)
+            t = line_trains[0]
+
+            train_no = t.get("trainno", "Unknown")
+            next_stop = t.get("nextstop", "Unknown").title()
+            delay = int(t.get("late", 0))
+
+            if delay == 0:
+                delay_text = "On time"
+            else:
+                delay_text = f"{delay} min late"
+
+            nearest_info = (
+                f"\n🚆 **Nearest train on this line:**\n"
+               f"**{line_name} Train {train_no}** -Next stop: **{next_stop}**\n"
+                f"Status: {delay_text}\n"
+            )
+
+        # build final clean message
+        if no_trains:
+            final_message = (
+                f"🛤 **{line_name}** → **{station}**\n\n"
+                f"📡 **Station Status:**\n"
+                f"No upcoming trains currently approaching **{station}**.\n"
+                f"{nearest_info}"
+                f"\n📈 **Line Status:**\n{line_status}"
+            )
+        else:
+            final_message = (
+                f"🛤 **{line_name}** → **{station}**\n\n"
+                f"{arrivals_text}"
+            )
+
+        await interaction.response.send_message(final_message, ephemeral=False)
+
+
 
 
 class StationView(View):
-    def __init__(self, line_name):
+    def __init__(self, stations):
         super().__init__()
-        self.add_item(StationSelect(line_name))
+        self.add_item(StationSelect(stations))
 
 
+# class LineSelect(Select):
+#     def __init__(self):
+#         super().__init__(
+#             placeholder="Select a Regional Rail Line",
+#             options=[discord.SelectOption(label=l) for l in LINE_OPTIONS]
+#         )
 class LineSelect(Select):
-    def __init__(self):
-        super().__init__(
-            placeholder="Select a Regional Rail Line",
-            options=[discord.SelectOption(label=l) for l in LINE_OPTIONS]
-        )
+    def __init__(self, line_map):
+        # dropdown of line names
+        options = [discord.SelectOption(label=line) for line in line_map.keys()]
+        super().__init__(placeholder="Select a Regional Rail Line", options=options)
+        self.line_map = line_map
 
     async def callback(self, interaction):
         line_name = self.values[0]
+        stations = self.line_map[line_name]     # get stations from dynamic map
+
+        # save user selected line
+        USER_SELECTIONS[interaction.user.id] = {"line": line_name}
+
+        #give the live line status
+        status_text = await get_line_status(line_name)
+
+        #make it readable
+        station_list = "\n".join(f"- {s}" for s in stations)
+
         await interaction.response.send_message(
-            f"🛤 You selected **{line_name}**.\nNow choose a station:",
-            view=StationView(line_name),
-            ephemeral=True
+            f"🛤 **{line_name} Line Info**\n\n"
+        f"**Status:**\n{status_text}\n\n"
+        f"**Stations served:**\n{station_list}",
+        view= StationView(stations),
+        ephemeral=True
         )
+
+    # async def callback(self, interaction):
+    #     line_name = self.values[0]
+    #     await interaction.response.send_message(
+    #         f"🛤 You selected **{line_name}**.\nNow choose a station:",
+    #         view=StationView(line_name),
+    #         ephemeral=True
+    #     )
 
 
 class LineView(View):
-    def __init__(self):
+    #now LineSelect requires line_map
+    def __init__(self,line_map):
         super().__init__()
-        self.add_item(LineSelect())
+        self.add_item(LineSelect(line_map))
 
 async def build_subscribe_line_view():
     from Septa_Api import get_unique_regional_rail_lines

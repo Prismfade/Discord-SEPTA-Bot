@@ -62,7 +62,8 @@ async def get_line_status(line_name):
                         delayed.append(f"🚆 {line} Train {train_id}: {delay} min late")
 
                 if not delayed:
-                    return f"All {line_name.title()} Line trains are on time ✅"
+                    # return f"All {line_name.title()} Line trains are on time ✅"
+                    return f"Line is active and all trains are on time. ✅"
 
                 return "\n".join(delayed[:10])  # Limit to first 10 results
 

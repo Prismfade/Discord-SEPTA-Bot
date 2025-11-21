@@ -1,2 +1,12 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# dotenv
 .env
+
+# ignore test file
 Test.py
