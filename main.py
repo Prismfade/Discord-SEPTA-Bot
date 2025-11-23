@@ -2,30 +2,22 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
-from Select_menu import (
-    LineView,
-    build_subscribe_line_view,
-    build_unsubscribe_view
-)
+from Select_menu import LineView, SubscribeLineView, UnsubscribeLineView
 from dynamic_station import fetch_line_station_map
-import os
-import random
-import aiohttp
+from Line_Subscription import get_user_subscriptions, notify_line, user_line_subscriptions
+from Stations import normalize_station
+import os, random
+import asyncio
 from Septa_Api import (
     get_regional_rail_status,
     get_line_status,
     get_next_train,
-    stationList, get_station_arrivals,
+    stationList, 
+    get_station_arrivals,
+    get_unique_regional_rail_lines
 )
-from Line_Subscription import (
-    subscribe_to_line,
-    unsubscribe_to_line,
-    get_user_subscriptions,
-)    
-from Stations import normalize_station
 
 COMMAND_LIST = []
-
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
@@ -38,7 +30,6 @@ register("/menu")
 register("/lines")
 register("/subscribe")
 register("/unsubscribe")
-
 
 # Setup 
 load_dotenv()
@@ -56,11 +47,14 @@ intents = discord.Intents.default()
 intents.message_content = True  
 intents.members = True    
 
+class MyBot(commands.Bot):
+    async def setup_hook(self):
+        # Start background task properly for discord.py v2.x
+        self.bg_task = asyncio.create_task(background_notify_loop(self))
+
+
 # Bot Initialization
-# use help_command = None so the helpers command won't show up.
-bot = commands.Bot(command_prefix='!', intents=intents,help_command = None )
-
-
+bot = MyBot(command_prefix='!', intents=intents, help_command=None)
 
 # # Events
 @bot.event
@@ -197,25 +191,16 @@ async def on_message(message):
         await message.channel.send(result)
 
     elif "/subscribe" in content:
-        view = await build_subscribe_line_view()
-        await message.channel.send(
-            "Select a regional rail line to subscribe to:",
-            view=view
-        )
+        line_names = await get_unique_regional_rail_lines()
+        if not line_names: line_names = ["No lines available"]
+        await message.channel.send("Select a regional rail line to subscribe:", view=SubscribeLineView(line_names))
 
     elif "/unsubscribe" in content:
         user_subs = await get_user_subscriptions(message.author.id)
         if not user_subs:
-            await message.channel.send(
-                "❌ You aren't subscribed to any lines. Use `!subscribe` instead."
-            )
+            await message.channel.send("❌ You aren't subscribed to any lines. Use /subscribe instead.")
             return
-
-        view = await build_unsubscribe_view(user_subs)
-        await message.channel.send(
-            "Here are your current line subscriptions:",
-            view=view
-        )
+        await message.channel.send("Select a line to unsubscribe from:", view=UnsubscribeLineView(user_subs))
 
     elif "/help" in content:
         help_text = "**Available Commands:**\n\n"
@@ -290,7 +275,20 @@ async def menu(ctx):
         view = LineView(line_map)
     )
 
-    
+async def background_notify_loop(bot):
+    await bot.wait_until_ready()
+    while not bot.is_closed():
+        for user_id, subs in user_line_subscriptions.items():
+            for line_name in subs:
+                try:
+                    status = await get_line_status(line_name)
+                    if "late" in status.lower() or "delayed" in status.lower():
+                        await notify_line(bot, line_name, status)
+                except Exception as e:
+                    print(f"Error notifying {user_id} for {line_name}: {e}")
+
+        await asyncio.sleep(60)  # TO-DO: Decide how often to refresh? 
+                                 # For testing purposes currently refreshes train line status every 60 seconds.
 
 # Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)
