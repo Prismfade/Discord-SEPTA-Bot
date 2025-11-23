@@ -71,7 +71,6 @@ async def on_ready():
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, and station information.\n"
             "Type **!help** to see what I can do!\n"
-            
         )
 
 @bot.event
@@ -213,7 +212,8 @@ async def on_message(message):
             "/stations": "Lists all Regional Rail stations.",
             "/menu":"Shows the list of Regional Rail Line for user to select",
             "/lines": "Shows what lines serve the station",
-
+            "/subscribe": "Sign up to receive status updates for a train line.",
+            "/unsubscribe": "Stop receiving status updates for a train line."
         }
 
         for cmd, desc in HELP_DICT.items():
@@ -259,8 +259,6 @@ async def on_message(message):
         reply = random.choice(responses)
         await message.channel.send(reply)
         return
-
-
 
     # Allow commands to still work if added later
     await bot.process_commands(message)
