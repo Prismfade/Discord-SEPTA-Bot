@@ -107,9 +107,9 @@ async def on_message(message):
 
     #       NEXT TRAIN FEATURE        #
     #elif content("!next train"):
-    elif content.startswith("!next train"):
+    elif content.startswith("/next train"):
         # remove the command and check if user typed origin + destination in same line
-        user_input = content.replace("!next train", "").strip()
+        user_input = content.replace("/next train", "").strip()
         parts = user_input.split()
 
         # user typed both stations (skip asking questions)
