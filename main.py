@@ -7,6 +7,7 @@ from dynamic_station import fetch_line_station_map
 from Line_Subscription import get_user_subscriptions, notify_line, user_line_subscriptions
 from Stations import normalize_station
 import os, random
+from discord import app_commands
 import asyncio
 from Septa_Api import (
     get_regional_rail_status,
@@ -22,7 +23,7 @@ COMMAND_LIST = []
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
 register("/help")
-register("/regional rail status")
+register("/regional_rail_status")
 register("/check line status")
 register("/next train")
 register("/stations")
@@ -47,18 +48,35 @@ intents = discord.Intents.default()
 intents.message_content = True  
 intents.members = True    
 
-class MyBot(commands.Bot):
-    async def setup_hook(self):
-        # Start background task properly for discord.py v2.x
-        self.bg_task = asyncio.create_task(background_notify_loop(self))
+# class MyBot(commands.Bot):
+#     async def setup_hook(self):
+#         # Start background task properly for discord.py v2.x
+#         self.bg_task = asyncio.create_task(background_notify_loop(self))
 
 
 # Bot Initialization
-bot = MyBot(command_prefix='!', intents=intents, help_command=None)
+# bot = MyBot(command_prefix='!', intents=intents, help_command=None)
 
+
+
+class MyBot(commands.Bot):
+    def __init__(self):
+        super().__init__(
+            command_prefix='!',
+            intents=intents,
+            help_command=None
+        )
+
+    async def setup_hook(self):
+        self.bg_task = asyncio.create_task(background_notify_loop(self))
+
+
+bot = MyBot()
 # # Events
 @bot.event
 async def on_ready():
+    await bot.tree.sync()
+    print("Slash commands synced!")
     print("Bot is online!")
     print(f'Logged in as {bot.user.name} - {bot.user.id}')
     print('------')
@@ -70,8 +88,18 @@ async def on_ready():
         await channel.send(
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, and station information.\n"
-            "Type **!help** to see what I can do!\n"
+            "Type **/help** to see what I can do!\n"
         )
+
+@bot.tree.command(name="hello", description="Test slash command")
+async def hello(interaction: discord.Interaction):
+    await interaction.response.send_message("Hello Septa users!")
+
+@bot.tree.command(name="regional_rail_status", description="Shows live delays on all Regional Rail trains.")
+async def regional_rail_status(interaction: discord.Interaction):
+    await interaction.response.send_message("Fetching live status…")
+    status_message = await get_regional_rail_status()
+    await interaction.followup.send(status_message)
 
 @bot.event
 async def on_message(message):
@@ -82,13 +110,13 @@ async def on_message(message):
     content = message.content.lower()
 
     #      REGIONAL RAIL STATUS       #
-    if "/regional rail status" in content:
-        await message.channel.send("Fetching live SEPTA Regional Rail status… ")
-        status_message = await get_regional_rail_status()
-        await message.channel.send(status_message)
+    # if "/regional rail status" in content:
+    #     await message.channel.send("Fetching live SEPTA Regional Rail status… ")
+    #     status_message = await get_regional_rail_status()
+    #     await message.channel.send(status_message)
 
     #       CHECK ANY LINE STATUS     #
-    elif "/check line status" in content:
+    if "/check line status" in content:
         await message.channel.send("Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
 
         def check(m):
@@ -206,7 +234,7 @@ async def on_message(message):
 
         HELP_DICT = {
             "/help": "Shows this help menu.(You prob already know this but, I like putting it here)",
-            "/regional rail status": "Shows live delays for all Regional Rail trains.",
+            "/regional_rail_status": "Shows live delays for all Regional Rail trains.",
             "/check line status": "Lets you check any specific train line.",
             "/next train": "Shows the next train between two stations.",
             "/stations": "Lists all Regional Rail stations.",
