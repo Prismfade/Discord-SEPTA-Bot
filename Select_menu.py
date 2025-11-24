@@ -1,207 +1,88 @@
 import discord
-import Stations
 from discord.ui import View, Select
-from Line_Subscription import (
-    subscribe_to_line,
-    unsubscribe_to_line
-)
-from dynamic_station import fetch_line_station_map
-from Septa_Api import get_line_status
+from Line_Subscription import subscribe_to_line, unsubscribe_to_line
+from Stations import normalize_station
+from Septa_Api import get_line_status, get_station_arrivals
 
 USER_SELECTIONS = {}
 
-
-
-
-from Septa_Api import get_station_arrivals
-
+# ---------------- STATION SELECTION ----------------
 class StationSelect(Select):
     def __init__(self, stations):
         stations = stations[:25]
-        super().__init__(
-            placeholder="Select a station",
-            options=[discord.SelectOption(label=s) for s in stations]
-        )
+        super().__init__(placeholder="Select a station", options=[discord.SelectOption(label=s) for s in stations])
         self.stations = stations
 
     async def callback(self, interaction):
         station = self.values[0]
         user_id = interaction.user.id
 
-        # load stored line
         selection = USER_SELECTIONS.get(user_id, {})
         line_name = selection.get("line")
-
-        # save station
         selection["station"] = station
         USER_SELECTIONS[user_id] = selection
 
-        # fetch arrivals for this station
         arrivals_text = await get_station_arrivals(station)
-
-        # detect no trains
-        no_trains = "No upcoming trains for" in arrivals_text
-
-        # line status and all trains
-        from Septa_Api import get_line_status
         line_status = await get_line_status(line_name)
-
-        # fetch all train data to locate nearest train
-        import aiohttp
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://www3.septa.org/api/TrainView/index.php") as response:
-                data = await response.json()
-
-        # find all trains on this line
-        line_trains = [
-            train for train in data
-            if line_name.lower() in train.get("line", "").lower()
-        ]
-
-        nearest_info = ""
-
-        if no_trains and line_trains:
-            # pick the first train on the line (TrainView is already ordered live)
-            t = line_trains[0]
-
-            train_no = t.get("trainno", "Unknown")
-            next_stop = t.get("nextstop", "Unknown").title()
-            delay = int(t.get("late", 0))
-
-            if delay == 0:
-                delay_text = "On time"
-            else:
-                delay_text = f"{delay} min late"
-
-            nearest_info = (
-                f"\n🚆 **Nearest train on this line:**\n"
-               f"**{line_name} Train {train_no}** -Next stop: **{next_stop}**\n"
-                f"Status: {delay_text}\n"
-            )
-
-        # build final clean message
-        if no_trains:
-            final_message = (
-                f"🛤 **{line_name}** → **{station}**\n\n"
-                f"📡 **Station Status:**\n"
-                f"No upcoming trains currently approaching **{station}**.\n"
-                f"{nearest_info}"
-                f"\n📈 **Line Status:**\n{line_status}"
-            )
-        else:
-            final_message = (
-                f"🛤 **{line_name}** → **{station}**\n\n"
-                f"{arrivals_text}"
-            )
-
+        final_message = f"🛤 **{line_name}** → **{station}**\n\n{arrivals_text}\n\n📈 **Line Status:**\n{line_status}"
         await interaction.response.send_message(final_message, ephemeral=False)
-
-
-
 
 class StationView(View):
     def __init__(self, stations):
         super().__init__()
         self.add_item(StationSelect(stations))
 
-
-# class LineSelect(Select):
-#     def __init__(self):
-#         super().__init__(
-#             placeholder="Select a Regional Rail Line",
-#             options=[discord.SelectOption(label=l) for l in LINE_OPTIONS]
-#         )
+# ---------------- LINE SELECTION ----------------
 class LineSelect(Select):
     def __init__(self, line_map):
-        # dropdown of line names
         options = [discord.SelectOption(label=line) for line in line_map.keys()]
         super().__init__(placeholder="Select a Regional Rail Line", options=options)
         self.line_map = line_map
 
     async def callback(self, interaction):
         line_name = self.values[0]
-        stations = self.line_map[line_name]     # get stations from dynamic map
-
-        # save user selected line
+        stations = self.line_map[line_name]
         USER_SELECTIONS[interaction.user.id] = {"line": line_name}
-
-        #give the live line status
         status_text = await get_line_status(line_name)
-
-        #make it readable
         station_list = "\n".join(f"- {s}" for s in stations)
-
         await interaction.response.send_message(
-            f"🛤 **{line_name} Line Info**\n\n"
-        f"**Status:**\n{status_text}\n\n"
-        f"**Stations served:**\n{station_list}",
-        view= StationView(stations),
-        ephemeral=True
+            f"🛤 **{line_name} Line Info**\n\n**Status:**\n{status_text}\n\n**Stations served:**\n{station_list}",
+            view=StationView(stations),
+            ephemeral=True
         )
 
-    # async def callback(self, interaction):
-    #     line_name = self.values[0]
-    #     await interaction.response.send_message(
-    #         f"🛤 You selected **{line_name}**.\nNow choose a station:",
-    #         view=StationView(line_name),
-    #         ephemeral=True
-    #     )
-
-
 class LineView(View):
-    #now LineSelect requires line_map
-    def __init__(self,line_map):
+    def __init__(self, line_map):
         super().__init__()
         self.add_item(LineSelect(line_map))
 
-async def build_subscribe_line_view():
-    from Septa_Api import get_unique_regional_rail_lines
-    line_names = await get_unique_regional_rail_lines()
-    if not line_names:
-        line_names = ["No lines available"]
+# ---------------- SUBSCRIBE / UNSUBSCRIBE ----------------
+class SubscribeLineSelect(Select):
+    def __init__(self, line_names):
+        super().__init__(placeholder="Select a line to subscribe", options=[discord.SelectOption(label=l) for l in line_names])
 
-    # Inner Select class created with dynamic options
-    class SubscribeLineSelect(Select):
-        def __init__(self):
-            super().__init__(
-                placeholder="Select a Regional Rail Line",
-                options=[discord.SelectOption(label=line) for line in line_names]
-            )
+    async def callback(self, interaction):
+        user_id = interaction.user.id
+        line_name = self.values[0]
+        result = await subscribe_to_line(user_id, line_name)
+        await interaction.response.send_message(f"✅ {result}", ephemeral=True)
 
-        async def callback(self, interaction):
-            user_id = interaction.user.id
-            line_name = self.values[0]
-            result = await subscribe_to_line(user_id, line_name)
-            await interaction.response.send_message(
-                f"✅ {result}\nChange your mind? Use `!unsubscribe`.", ephemeral=True
-            )
+class SubscribeLineView(View):
+    def __init__(self, line_names):
+        super().__init__()
+        self.add_item(SubscribeLineSelect(line_names))
 
-    class SubscribeLineView(View):
-        def __init__(self):
-            super().__init__()
-            self.add_item(SubscribeLineSelect())
+class UnsubscribeLineSelect(Select):
+    def __init__(self, user_subs):
+        super().__init__(placeholder="Select a line to unsubscribe", options=[discord.SelectOption(label=l) for l in user_subs])
 
-    return SubscribeLineView()
+    async def callback(self, interaction):
+        user_id = interaction.user.id
+        line_name = self.values[0]
+        result = await unsubscribe_to_line(user_id, line_name)
+        await interaction.response.send_message(f"❌ {result}", ephemeral=True)
 
-async def build_unsubscribe_view(user_subs):
-    if not user_subs:
-        user_subs = ["No subscriptions"]
-
-    class UserLineSelect(Select):
-        def __init__(self):
-            options = [discord.SelectOption(label=line) for line in user_subs]
-            super().__init__(placeholder="Select a line to unsubscribe from", options=options)
-
-        async def callback(self, interaction):
-            line_name = self.values[0]
-            result = await unsubscribe_to_line(interaction.user.id, line_name)
-            await interaction.response.send_message(
-                f"❌ {result}\nChange your mind? Use `!subscribe`.", ephemeral=True
-            )
-
-    class UserLineView(View):
-        def __init__(self):
-            super().__init__()
-            self.add_item(UserLineSelect())
-
-    return UserLineView()
+class UnsubscribeLineView(View):
+    def __init__(self, user_subs):
+        super().__init__()
+        self.add_item(UnsubscribeLineSelect(user_subs))
