@@ -20,8 +20,6 @@ from Septa_Api import (
 )
 
 COMMAND_LIST = []
-TEST_GUILD = discord.Object(id=1437230785072463882)
-
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
@@ -70,24 +68,21 @@ class MyBot(commands.Bot):
             help_command=None
         )
 
-    # async def setup_hook(self):
-    #     self.bg_task = asyncio.create_task(background_notify_loop(self))
+    async def setup_hook(self):
+
+
+        # Background loop
+        self.bg_task = asyncio.create_task(background_notify_loop(self))
 
 
 bot = MyBot()
+
+# TEST_GUILD = discord.Object(id=1437230785072463882)
 # # Events
 @bot.event
 async def on_ready():
-
-    if not hasattr(bot, "bg_task"):
-        bot.bg_task = asyncio.create_task(background_notify_loop(bot))
-    # FAST sync (guild only)
-    await bot.tree.sync(guild=TEST_GUILD)
-    print("FAST guild commands synced!")
-
-    # Optional slow global sync / comment out if annoying
-    # await bot.tree.sync()
-    # print("Global commands synced!")
+    await bot.tree.sync()
+    print("Global commands synced!")
 
     print("Bot is online!")
     print(f'Logged in as {bot.user.name} - {bot.user.id}')
@@ -120,6 +115,13 @@ async def station(interaction: discord.Interaction,name: str):
     result = await get_station_arrivals(station_norm)
     await interaction.response.send_message(result)
 
+
+@bot.tree.command(name="sync", description="Force global sync")
+async def sync(interaction: discord.Interaction):
+    await bot.tree.sync()
+    await interaction.response.send_message("Global commands synced!")
+
+
 #Dont add any command after the auto complete
 @station.autocomplete("name")
 async def station_autocomplete(interaction: discord.Interaction, current: str):
@@ -132,10 +134,6 @@ async def station_autocomplete(interaction: discord.Interaction, current: str):
         for s in matches [:25]
     ]
 
-@bot.tree.command(name="sync", description="Force sync commands")
-async def sync(interaction: discord.Interaction):
-    await bot.tree.sync(guild=TEST_GUILD)
-    await interaction.response.send_message("Guild commands synced instantly!")
 
 
 
@@ -320,7 +318,7 @@ async def on_message(message):
             f"Aww thanks, {user}! 😊 You're the real MVP.",
             f"Thanks, {user}! 🙌 I run cleaner than SEPTA’s tracks!",
             f"Cheers, {user}! 😄 My uptime > SEPTA reliability.",
-            f"O I I A I \<\<SPINNING TECHNIQUE\>\>"
+            f"O I I A I <<SPINNING TECHNIQUE>>"
         ]
 
         reply = random.choice(responses)
@@ -352,7 +350,7 @@ async def background_notify_loop(bot):
                 except Exception as e:
                     print(f"Error notifying {user_id} for {line_name}: {e}")
 
-        await asyncio.sleep(60)  # TO-DO: Decide how often to refresh? 
+        await asyncio.sleep(60)  # TO-DO: Decide how often to refresh?
                                  # For testing purposes currently refreshes train line status every 60 seconds.
 
 # Run Bot
