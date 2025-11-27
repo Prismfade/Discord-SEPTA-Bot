@@ -6,6 +6,7 @@ from Select_menu import LineView, SubscribeLineView, UnsubscribeLineView
 from dynamic_station import fetch_line_station_map
 from Line_Subscription import get_user_subscriptions, notify_line, user_line_subscriptions
 from Stations import normalize_station
+from Stations import REGIONAL_RAIL_STATIONS
 import os, random
 from discord import app_commands
 import asyncio
@@ -19,6 +20,8 @@ from Septa_Api import (
 )
 
 COMMAND_LIST = []
+TEST_GUILD = discord.Object(id=1437230785072463882)
+
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
@@ -26,7 +29,7 @@ register("/help")
 register("/regional_rail_status")
 register("/check line status")
 register("/next train")
-register("/stations")
+register("/station")
 register("/menu")
 register("/lines")
 register("/subscribe")
@@ -67,16 +70,25 @@ class MyBot(commands.Bot):
             help_command=None
         )
 
-    async def setup_hook(self):
-        self.bg_task = asyncio.create_task(background_notify_loop(self))
+    # async def setup_hook(self):
+    #     self.bg_task = asyncio.create_task(background_notify_loop(self))
 
 
 bot = MyBot()
 # # Events
 @bot.event
 async def on_ready():
-    await bot.tree.sync()
-    print("Slash commands synced!")
+
+    if not hasattr(bot, "bg_task"):
+        bot.bg_task = asyncio.create_task(background_notify_loop(bot))
+    # FAST sync (guild only)
+    await bot.tree.sync(guild=TEST_GUILD)
+    print("FAST guild commands synced!")
+
+    # Optional slow global sync / comment out if annoying
+    # await bot.tree.sync()
+    # print("Global commands synced!")
+
     print("Bot is online!")
     print(f'Logged in as {bot.user.name} - {bot.user.id}')
     print('------')
@@ -100,6 +112,33 @@ async def regional_rail_status(interaction: discord.Interaction):
     await interaction.response.send_message("Fetching live status…")
     status_message = await get_regional_rail_status()
     await interaction.followup.send(status_message)
+
+@bot.tree.command(name="station", description="Get arrival times for a station")
+@app_commands.describe(name ="Type a Regional Rail Station")
+async def station(interaction: discord.Interaction,name: str):
+    station_norm= normalize_station(name)
+    result = await get_station_arrivals(station_norm)
+    await interaction.response.send_message(result)
+
+#Dont add any command after the auto complete
+@station.autocomplete("name")
+async def station_autocomplete(interaction: discord.Interaction, current: str):
+    stations = REGIONAL_RAIL_STATIONS
+    #filter based on what user types
+    matches = [s for s in stations if current.lower() in s.lower()]
+    #return the list don't go over 25
+    return [
+        app_commands.Choice(name=s, value=s)
+        for s in matches [:25]
+    ]
+
+@bot.tree.command(name="sync", description="Force sync commands")
+async def sync(interaction: discord.Interaction):
+    await bot.tree.sync(guild=TEST_GUILD)
+    await interaction.response.send_message("Guild commands synced instantly!")
+
+
+
 
 @bot.event
 async def on_message(message):
@@ -212,10 +251,10 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
-    elif "/stations" in content:
-        await message.channel.send("Fetching all Regional Rail stations…")
-        result = await stationList()
-        await message.channel.send(result)
+    # elif "/stations" in content:
+    #     await message.channel.send("Fetching all Regional Rail stations…")
+    #     result = await stationList()
+    #     await message.channel.send(result)
 
     elif "/subscribe" in content:
         line_names = await get_unique_regional_rail_lines()
