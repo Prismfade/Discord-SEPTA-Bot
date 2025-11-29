@@ -6,6 +6,7 @@ from Select_menu import LineView, SubscribeLineView, UnsubscribeLineView
 from dynamic_station import fetch_line_station_map
 from Line_Subscription import get_user_subscriptions, notify_line, user_line_subscriptions
 from Stations import normalize_station
+from Stations import REGIONAL_RAIL_STATIONS
 import os, random
 from discord import app_commands
 import asyncio
@@ -26,7 +27,7 @@ register("/help")
 register("/regional_rail_status")
 register("/check line status")
 register("/next train")
-register("/stations")
+register("/station")
 register("/menu")
 register("/lines")
 register("/subscribe")
@@ -68,15 +69,21 @@ class MyBot(commands.Bot):
         )
 
     async def setup_hook(self):
+
+
+        # Background loop
         self.bg_task = asyncio.create_task(background_notify_loop(self))
 
 
 bot = MyBot()
+
+# TEST_GUILD = discord.Object(id=1437230785072463882)
 # # Events
 @bot.event
 async def on_ready():
     await bot.tree.sync()
-    print("Slash commands synced!")
+    print("Global commands synced!")
+
     print("Bot is online!")
     print(f'Logged in as {bot.user.name} - {bot.user.id}')
     print('------')
@@ -100,6 +107,36 @@ async def regional_rail_status(interaction: discord.Interaction):
     await interaction.response.send_message("Fetching live status…")
     status_message = await get_regional_rail_status()
     await interaction.followup.send(status_message)
+
+@bot.tree.command(name="station", description="Get arrival times for a station")
+@app_commands.describe(name ="Type a Regional Rail Station")
+async def station(interaction: discord.Interaction,name: str):
+    station_norm= normalize_station(name)
+    result = await get_station_arrivals(station_norm)
+    await interaction.response.send_message(result)
+
+
+@bot.tree.command(name="sync", description="Force global sync")
+async def sync(interaction: discord.Interaction):
+    await bot.tree.sync()
+    await interaction.response.send_message("Global commands synced!")
+
+
+#Dont add any command after the auto complete
+@station.autocomplete("name")
+async def station_autocomplete(interaction: discord.Interaction, current: str):
+    stations = REGIONAL_RAIL_STATIONS
+    #filter based on what user types
+    matches = [s for s in stations if current.lower() in s.lower()]
+    #return the list don't go over 25
+    return [
+        app_commands.Choice(name=s, value=s)
+        for s in matches [:25]
+    ]
+
+
+
+
 
 @bot.event
 async def on_message(message):
@@ -212,10 +249,10 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
-    elif "/stations" in content:
-        await message.channel.send("Fetching all Regional Rail stations…")
-        result = await stationList()
-        await message.channel.send(result)
+    # elif "/stations" in content:
+    #     await message.channel.send("Fetching all Regional Rail stations…")
+    #     result = await stationList()
+    #     await message.channel.send(result)
 
     elif "/subscribe" in content:
         line_names = await get_unique_regional_rail_lines()
@@ -281,7 +318,7 @@ async def on_message(message):
             f"Aww thanks, {user}! 😊 You're the real MVP.",
             f"Thanks, {user}! 🙌 I run cleaner than SEPTA’s tracks!",
             f"Cheers, {user}! 😄 My uptime > SEPTA reliability.",
-            f"O I I A I \<\<SPINNING TECHNIQUE\>\>"
+            f"O I I A I <<SPINNING TECHNIQUE>>"
         ]
 
         reply = random.choice(responses)
@@ -313,7 +350,7 @@ async def background_notify_loop(bot):
                 except Exception as e:
                     print(f"Error notifying {user_id} for {line_name}: {e}")
 
-        await asyncio.sleep(60)  # TO-DO: Decide how often to refresh? 
+        await asyncio.sleep(60)  # TO-DO: Decide how often to refresh?
                                  # For testing purposes currently refreshes train line status every 60 seconds.
 
 # Run Bot
