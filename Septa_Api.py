@@ -25,14 +25,18 @@ async def get_regional_rail_status():
                 if not isinstance(data, list) or len(data) == 0:
                     return "No train data available right now."
 
-                # Summarize train status
                 trains = []
-                for train in data[:10]:  # Limit output to 10 trains
+                for train in data[:10]:
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
+
+                    # Choose emoji based on delay
+                    emoji = "🟢" if delay == 0 else "🛑"
                     status = "on time" if delay == 0 else f"{delay} min late"
-                    trains.append(f"🚆 {line} Train {train_id}: {status}")
+
+                    # Format with emoji FIRST
+                    trains.append(f"{emoji} 🚆 {line} Train {train_id}: {status}")
 
                 return "\n".join(trains)
 
