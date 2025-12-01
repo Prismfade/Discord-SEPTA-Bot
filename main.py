@@ -188,12 +188,44 @@ async def on_message(message):
             origin_norm = normalize_station(origin_raw)
             dest_norm = normalize_station(dest_raw)
 
+            # --- Station validation (Check Station requirement) ---
+            invalid_bits = []
+
+            if origin_norm not in REGIONAL_RAIL_STATIONS:
+                invalid_bits.append(f"origin station **{origin_raw}**")
+
+            if dest_norm not in REGIONAL_RAIL_STATIONS:
+                invalid_bits.append(f"destination station **{dest_raw}**")
+
+            if invalid_bits:
+                msg = (
+                    "⚠️ I couldn't find "
+                    + " and ".join(invalid_bits)
+                    + " in the Regional Rail station list.\n"
+                    "Please check the spelling, or try `/station` to look up a station."
+                )
+                await message.channel.send(msg)
+                return
+
+            # --- If both stations look valid, call the API ---
             await message.channel.send(
                 f"Fetching the next train from **{origin_norm} → {dest_norm}**…"
             )
 
-            status_message = await get_next_train(origin_norm, dest_norm)
-            await message.channel.send(status_message)
+            try:
+                status_message = await get_next_train(origin_norm, dest_norm)
+                await message.channel.send(status_message)
+            except Exception as e:
+                # API Failure handling (logs for devs, friendly msg for users)
+                logging.exception(
+                    "Error in /next train (one-line) origin=%s dest=%s",
+                    origin_norm,
+                    dest_norm,
+                )
+                await message.channel.send(
+                    "⚠️ Sorry, something went wrong while fetching that trip.\n"
+                    "Please double-check your station names or try again in a minute."
+                )
             return
 
         # user did NOT type stations → original step-by-step flow
@@ -240,7 +272,13 @@ async def on_message(message):
             else:
                 origin_final = origin_raw
                 dest_final = dest_raw
+            # Validate stations exist before fetching train
+            if origin_norm not in REGIONAL_RAIL_STATIONS:
+                raise ValueError(f"Origin station **{origin_norm}** does not exist.")
 
+            if dest_norm not in REGIONAL_RAIL_STATIONS:
+                raise ValueError(f"Destination station **{dest_norm}** does not exist.")
+                
             # fetch train
             await message.channel.send(
                 f"Fetching the next train from **{origin_final} → {dest_final}**…"
@@ -249,8 +287,20 @@ async def on_message(message):
             status_message = await get_next_train(origin_final, dest_final)
             await message.channel.send(status_message)
 
-        except Exception:
+        except asyncio.TimeoutError:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
+
+        except ValueError as e:
+            # validation errors we raise ourselves
+            await message.channel.send(f"❌ {str(e)}")
+
+        except Exception as e:
+            # API failure, code issues, anything unexpected
+            await message.channel.send(
+                "⚠️ Something went wrong while checking the next train. "
+                "This may be a SEPTA API issue. Please try again later."
+            )
+            print("Unexpected error in /next train:", e)
 
     # elif "/stations" in content:
     #     await message.channel.send("Fetching all Regional Rail stations…")
