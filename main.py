@@ -307,7 +307,8 @@ async def on_message(message):
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
     #dw about this
-    elif any(phrase in content for phrase in ["great job", "good bot", "awesome bot", "good job","good work","w cat","awesome cat"]):
+    elif any(phrase in content for phrase in
+             ["great job", "good bot", "awesome bot", "good job", "good work", "w cat", "awesome cat"]):
         user = message.author.display_name
 
         responses = [
@@ -318,13 +319,24 @@ async def on_message(message):
             f"Aww thanks, {user}! 😊 You're the real MVP.",
             f"Thanks, {user}! 🙌 I run cleaner than SEPTA’s tracks!",
             f"Cheers, {user}! 😄 My uptime > SEPTA reliability.",
-            f"O I I A I <<SPINNING TECHNIQUE>>"
+            "O I I A I <<SPINNING TECHNIQUE>>"
         ]
 
         reply = random.choice(responses)
+
+        # Send the text first
         await message.channel.send(reply)
+
+        # Then send GIF if it's the cat spin
+        if reply == "O I I A I <<SPINNING TECHNIQUE>>":
+            await message.channel.send(file=discord.File("cat_spin.gif"))
+
         return
 
+    elif content in ["o i i a i", "spin", "w cat", "spin cat"]:
+        await message.channel.send("O I I A I <<SPINNING TECHNIQUE>>")
+        await message.channel.send(file=discord.File("cat_spin.gif"))
+        return
     # Allow commands to still work if added later
     await bot.process_commands(message)
 
