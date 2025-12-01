@@ -2,7 +2,11 @@ import discord
 from discord.ext import commands
 import logging
 from dotenv import load_dotenv
-from Select_menu import LineView, SubscribeLineView, UnsubscribeLineView
+from Select_menu import (
+    LineView,
+    build_subscribe_line_view,
+    build_unsubscribe_view
+)
 from dynamic_station import fetch_line_station_map
 from Line_Subscription import get_user_subscriptions, notify_line, user_line_subscriptions
 from Stations import normalize_station
@@ -14,24 +18,28 @@ from Septa_Api import (
     get_regional_rail_status,
     get_line_status,
     get_next_train,
-    stationList, 
-    get_station_arrivals,
-    get_unique_regional_rail_lines
+    stationList, get_station_arrivals,
 )
+from Line_Subscription import (
+    subscribe_to_line,
+    unsubscribe_to_line,
+    get_user_subscriptions,
+)    
+from Stations import normalize_station
 
 COMMAND_LIST = []
+
 
 def register(cmd_name: str):
     COMMAND_LIST.append(cmd_name)
 register("/help")
-register("/regional_rail_status")
+register("/regional rail status")
 register("/check line status")
 register("/next train")
 register("/station")
 register("/menu")
 register("/lines")
-register("/subscribe")
-register("/unsubscribe")
+
 
 # Setup 
 load_dotenv()
@@ -49,15 +57,9 @@ intents = discord.Intents.default()
 intents.message_content = True  
 intents.members = True    
 
-# class MyBot(commands.Bot):
-#     async def setup_hook(self):
-#         # Start background task properly for discord.py v2.x
-#         self.bg_task = asyncio.create_task(background_notify_loop(self))
-
-
 # Bot Initialization
-# bot = MyBot(command_prefix='!', intents=intents, help_command=None)
-
+# use help_command = None so the helpers command won't show up.
+bot = commands.Bot(command_prefix='!', intents=intents,help_command = None )
 
 
 class MyBot(commands.Bot):
@@ -95,7 +97,8 @@ async def on_ready():
         await channel.send(
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, and station information.\n"
-            "Type **/help** to see what I can do!\n"
+            "Type **!help** to see what I can do!\n"
+            
         )
 
 @bot.tree.command(name="hello", description="Test slash command")
@@ -147,13 +150,13 @@ async def on_message(message):
     content = message.content.lower()
 
     #      REGIONAL RAIL STATUS       #
-    # if "/regional rail status" in content:
-    #     await message.channel.send("Fetching live SEPTA Regional Rail status… ")
-    #     status_message = await get_regional_rail_status()
-    #     await message.channel.send(status_message)
+    if "/regional rail status" in content:
+        await message.channel.send("Fetching live SEPTA Regional Rail status… ")
+        status_message = await get_regional_rail_status()
+        await message.channel.send(status_message)
 
     #       CHECK ANY LINE STATUS     #
-    if "/check line status" in content:
+    elif "/check line status" in content:
         await message.channel.send("Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
 
         def check(m):
@@ -172,9 +175,9 @@ async def on_message(message):
 
     #       NEXT TRAIN FEATURE        #
     #elif content("!next train"):
-    elif content.startswith("/next train"):
+    elif content.startswith("!next train"):
         # remove the command and check if user typed origin + destination in same line
-        user_input = content.replace("/next train", "").strip()
+        user_input = content.replace("!next train", "").strip()
         parts = user_input.split()
 
         # user typed both stations (skip asking questions)
@@ -254,31 +257,18 @@ async def on_message(message):
     #     result = await stationList()
     #     await message.channel.send(result)
 
-    elif "/subscribe" in content:
-        line_names = await get_unique_regional_rail_lines()
-        if not line_names: line_names = ["No lines available"]
-        await message.channel.send("Select a regional rail line to subscribe:", view=SubscribeLineView(line_names))
-
-    elif "/unsubscribe" in content:
-        user_subs = await get_user_subscriptions(message.author.id)
-        if not user_subs:
-            await message.channel.send("❌ You aren't subscribed to any lines. Use /subscribe instead.")
-            return
-        await message.channel.send("Select a line to unsubscribe from:", view=UnsubscribeLineView(user_subs))
-
     elif "/help" in content:
         help_text = "**Available Commands:**\n\n"
 
         HELP_DICT = {
             "/help": "Shows this help menu.(You prob already know this but, I like putting it here)",
-            "/regional_rail_status": "Shows live delays for all Regional Rail trains.",
+            "/regional rail status": "Shows live delays for all Regional Rail trains.",
             "/check line status": "Lets you check any specific train line.",
             "/next train": "Shows the next train between two stations.",
             "/station name": "Shows Regional Rail Lines that stop at selected station.",
             "/menu":"Shows the list of Regional Rail Line for user to select",
             "/lines": "Shows what lines serve the station",
-            "/subscribe": "Sign up to receive status updates for a train line.",
-            "/unsubscribe": "Stop receiving status updates for a train line."
+
         }
 
         for cmd, desc in HELP_DICT.items():
