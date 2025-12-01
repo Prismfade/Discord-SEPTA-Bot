@@ -274,7 +274,7 @@ async def on_message(message):
             "/regional_rail_status": "Shows live delays for all Regional Rail trains.",
             "/check line status": "Lets you check any specific train line.",
             "/next train": "Shows the next train between two stations.",
-            "/stations": "Shows Regional Rail Lines that stop at selected station.",
+            "/station name": "Shows Regional Rail Lines that stop at selected station.",
             "/menu":"Shows the list of Regional Rail Line for user to select",
             "/lines": "Shows what lines serve the station",
             "/subscribe": "Sign up to receive status updates for a train line.",
