@@ -1,6 +1,2 @@
-[2025-11-21 09:56:34] [INFO    ] discord.client: logging in using static token
-[2025-11-21 09:56:35] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 1f2399265ec4857561074f26a5aca5b0).
-[2025-11-21 09:56:59] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
-discord.ext.commands.errors.CommandNotFound: Command "subscribe" is not found
-[2025-11-21 09:57:08] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
-discord.ext.commands.errors.CommandNotFound: Command "unsubscribe" is not found
+[2025-12-01 11:43:04] [INFO    ] discord.client: logging in using static token
+[2025-12-01 11:43:05] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 4b39a40d624b5e3078a0905104edfbfe).

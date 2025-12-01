@@ -8,9 +8,12 @@ from Select_menu import (
     build_unsubscribe_view
 )
 from dynamic_station import fetch_line_station_map
-import os
-import random
-import aiohttp
+from Line_Subscription import get_user_subscriptions, notify_line, user_line_subscriptions
+from Stations import normalize_station
+from Stations import REGIONAL_RAIL_STATIONS
+import os, random
+from discord import app_commands
+import asyncio
 from Septa_Api import (
     get_regional_rail_status,
     get_line_status,
@@ -33,7 +36,7 @@ register("/help")
 register("/regional rail status")
 register("/check line status")
 register("/next train")
-register("/stations")
+register("/station")
 register("/menu")
 register("/lines")
 
@@ -59,10 +62,30 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents,help_command = None )
 
 
+class MyBot(commands.Bot):
+    def __init__(self):
+        super().__init__(
+            command_prefix='!',
+            intents=intents,
+            help_command=None
+        )
 
+    async def setup_hook(self):
+
+
+        # Background loop
+        self.bg_task = asyncio.create_task(background_notify_loop(self))
+
+
+bot = MyBot()
+
+# TEST_GUILD = discord.Object(id=1437230785072463882)
 # # Events
 @bot.event
 async def on_ready():
+    await bot.tree.sync()
+    print("Global commands synced!")
+
     print("Bot is online!")
     print(f'Logged in as {bot.user.name} - {bot.user.id}')
     print('------')
@@ -77,6 +100,46 @@ async def on_ready():
             "Type **!help** to see what I can do!\n"
             
         )
+
+@bot.tree.command(name="hello", description="Test slash command")
+async def hello(interaction: discord.Interaction):
+    await interaction.response.send_message("Hello Septa users!")
+
+@bot.tree.command(name="regional_rail_status", description="Shows live delays on all Regional Rail trains.")
+async def regional_rail_status(interaction: discord.Interaction):
+    await interaction.response.send_message("Fetching live status…")
+    status_message = await get_regional_rail_status()
+    await interaction.followup.send(status_message)
+
+@bot.tree.command(name="station", description="Get arrival times for a station")
+@app_commands.describe(name ="Type a Regional Rail Station")
+async def station(interaction: discord.Interaction,name: str):
+    station_norm= normalize_station(name)
+    result = await get_station_arrivals(station_norm)
+    await interaction.response.send_message(result)
+
+
+@bot.tree.command(name="sync", description="Force global sync")
+async def sync(interaction: discord.Interaction):
+    await bot.tree.sync()
+    await interaction.response.send_message("Global commands synced!")
+
+
+#Dont add any command after the auto complete
+@station.autocomplete("name")
+async def station_autocomplete(interaction: discord.Interaction, current: str):
+    stations = REGIONAL_RAIL_STATIONS
+    #filter based on what user types
+    matches = [s for s in stations if current.lower() in s.lower()]
+    #return the list don't go over 25
+    return [
+        app_commands.Choice(name=s, value=s)
+        for s in matches [:25]
+    ]
+
+
+
+
 
 @bot.event
 async def on_message(message):
@@ -189,10 +252,10 @@ async def on_message(message):
         except Exception:
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
-    elif "/stations" in content:
-        await message.channel.send("Fetching all Regional Rail stations…")
-        result = await stationList()
-        await message.channel.send(result)
+    # elif "/stations" in content:
+    #     await message.channel.send("Fetching all Regional Rail stations…")
+    #     result = await stationList()
+    #     await message.channel.send(result)
 
     elif "/help" in content:
         help_text = "**Available Commands:**\n\n"
@@ -202,7 +265,7 @@ async def on_message(message):
             "/regional rail status": "Shows live delays for all Regional Rail trains.",
             "/check line status": "Lets you check any specific train line.",
             "/next train": "Shows the next train between two stations.",
-            "/stations": "Lists all Regional Rail stations.",
+            "/station name": "Shows Regional Rail Lines that stop at selected station.",
             "/menu":"Shows the list of Regional Rail Line for user to select",
             "/lines": "Shows what lines serve the station",
 
@@ -234,7 +297,8 @@ async def on_message(message):
             await message.channel.send("⏰ You didn’t reply in time. Try again.")
 
     #dw about this
-    elif any(phrase in content for phrase in ["great job", "good bot", "awesome bot", "good job","good work","w cat","awesome cat"]):
+    elif any(phrase in content for phrase in
+             ["great job", "good bot", "awesome bot", "good job", "good work", "w cat", "awesome cat"]):
         user = message.author.display_name
 
         responses = [
@@ -245,15 +309,24 @@ async def on_message(message):
             f"Aww thanks, {user}! 😊 You're the real MVP.",
             f"Thanks, {user}! 🙌 I run cleaner than SEPTA’s tracks!",
             f"Cheers, {user}! 😄 My uptime > SEPTA reliability.",
-            f"O I I A I \<\<SPINNING TECHNIQUE\>\>"
+            "O I I A I <<SPINNING TECHNIQUE>>"
         ]
 
         reply = random.choice(responses)
+
+        # Send the text first
         await message.channel.send(reply)
+
+        # Then send GIF if it's the cat spin
+        if reply == "O I I A I <<SPINNING TECHNIQUE>>":
+            await message.channel.send(file=discord.File("cat_spin.gif"))
+
         return
 
-
-
+    elif content in ["o i i a i", "spin", "w cat", "spin cat"]:
+        await message.channel.send("O I I A I <<SPINNING TECHNIQUE>>")
+        await message.channel.send(file=discord.File("cat_spin.gif"))
+        return
     # Allow commands to still work if added later
     await bot.process_commands(message)
 
@@ -267,7 +340,20 @@ async def menu(ctx):
         view = LineView(line_map)
     )
 
-    
+async def background_notify_loop(bot):
+    await bot.wait_until_ready()
+    while not bot.is_closed():
+        for user_id, subs in user_line_subscriptions.items():
+            for line_name in subs:
+                try:
+                    status = await get_line_status(line_name)
+                    if "late" in status.lower() or "delayed" in status.lower():
+                        await notify_line(bot, line_name, status)
+                except Exception as e:
+                    print(f"Error notifying {user_id} for {line_name}: {e}")
+
+        await asyncio.sleep(60)  # TO-DO: Decide how often to refresh?
+                                 # For testing purposes currently refreshes train line status every 60 seconds.
 
 # Run Bot
 bot.run(token, log_handler=handler, log_level=logging.INFO)

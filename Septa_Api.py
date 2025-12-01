@@ -1,8 +1,17 @@
 import aiohttp
+from datetime import datetime,timedelta
 
 from Stations import REGIONAL_RAIL_STATIONS, normalize_station
 # STATIONS_CACHE = []  -> might not need it no more? since i made the whole listing myself
 # Fetch SEPTA Regional Rail Status
+
+def clean_time(raw):
+    try:
+        dt = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S.%f")
+        return dt.strftime("%I:%M %p").lstrip("0"), dt
+    except:
+        return "N/A", None
+
 async def get_regional_rail_status():
     url = "https://www3.septa.org/api/TrainView/index.php"
     try:
@@ -16,14 +25,18 @@ async def get_regional_rail_status():
                 if not isinstance(data, list) or len(data) == 0:
                     return "No train data available right now."
 
-                # Summarize train status
                 trains = []
-                for train in data[:10]:  # Limit output to 10 trains
+                for train in data[:10]:
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
+
+                    # Choose emoji based on delay
+                    emoji = "🟢" if delay == 0 else "🛑"
                     status = "on time" if delay == 0 else f"{delay} min late"
-                    trains.append(f"🚆 {line} Train {train_id}: {status}")
+
+                    # Format with emoji FIRST
+                    trains.append(f"{emoji} 🚆 {line} Train {train_id}: {status}")
 
                 return "\n".join(trains)
 
@@ -186,13 +199,29 @@ async def get_station_arrivals(station_name):
     # Convert whatever the user typed into a proper station name
     station = normalize_station(station_name)
     url = "https://www3.septa.org/api/TrainView/index.php"
-
+    url2 = f"https://www3.septa.org/api/Arrivals/index.php?station={station}"
     arrivals = []
+    
 
     try:
+        # First fetch: TrainView
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 data = await response.json()
+
+         # Second fetch: Arrivals API
+            async with session.get(url2) as response2:
+                arrival_data = await response2.json()
+            actual_key = list(arrival_data.keys())[0]
+            direction_groups = arrival_data[actual_key]
+            arrival_list =[]
+            for group in direction_groups:
+                for direction_name, trains in group.items():
+                    #trains a list
+                    arrival_list.extend(trains)
+
+            arrivals_by_trainno = { str(item["train_id"]): item for item in arrival_list }
+            
 
         # Helper: TrainView sometimes uses different spellings for stations.
         # This converts all versions into one consistent name.
@@ -209,12 +238,14 @@ async def get_station_arrivals(station_name):
         # Loop through every train and see if it is coming to our station
         for train in data:
             next_stop_raw = train.get("nextstop", "").strip()
-            if not next_stop_raw:
+            if not next_stop_raw or next_stop_raw.lower() == "null":
                 continue
 
-            next_stop = normalize_nextstop(next_stop_raw)
+            next_stop = normalize_nextstop(next_stop_raw)  # clean API value
+            station_norm = station.lower()
 
-            if next_stop == station:
+            # Fuzzy matching: station contains API name OR API name contains station
+            if station_norm in next_stop.lower() or next_stop.lower() in station_norm:
                 arrivals.append(train)
 
         # No trains? Tell the user.
@@ -235,17 +266,37 @@ async def get_station_arrivals(station_name):
             train_no = train.get("trainno", "N/A")
             due = train.get("due", "N/A")
             delay = int(train.get("late", 0))
+            arr_info = arrivals_by_trainno.get(str(train_no))
+            raw_arr = arr_info.get("sched_time") if arr_info else None
+            sched_arrival_str, sched_arrival_dt = clean_time(raw_arr)
+            track = arr_info.get("track", "N/A") if arr_info else "N/A"
+            official_status = arr_info.get("status", "N/A") if arr_info else "N/A"
 
 
+            #always add 1 to departrue cz ppl r dealing with getting on n off
+            if sched_arrival_dt:
+    
+                depart_dt = sched_arrival_dt + timedelta(minutes=1)
+                sched_depart_str = depart_dt.strftime("%I:%M %p").lstrip("0")
+            else:
+                sched_depart_str = "N/A"
+            #compute ETA
+            if sched_arrival_dt:
+                now = datetime.now()
+                eta_delta = sched_arrival_dt -now
+                eta_minutes = max(int(eta_delta.total_seconds() // 60), 0)
+            else:
+                eta_minutes = "N/A"  
+            
 
             # Calculate the actual arrival time (right now + due minutes)
-            try:
-                due_minutes = int(due)
-                from datetime import datetime, timedelta
-                arrival_time = datetime.now() + timedelta(minutes=due_minutes)
-                arrival_str = arrival_time.strftime("%I:%M %p").lstrip("0")
-            except:
-                arrival_str = "N/A"
+            # try:
+            #     due_minutes = int(due)
+            #     from datetime import datetime, timedelta
+            #     # arrival_time = datetime.now() + timedelta(minutes=due_minutes)
+            #     # arrival_str = arrival_time.strftime("%I:%M %p").lstrip("0")
+            # except:
+            #     arrival_str = "N/A"
 
 
 
@@ -265,8 +316,12 @@ async def get_station_arrivals(station_name):
             # Add info about this train to the message
             message_lines.append(
                 f"🚆 **{line}**  Train **{train_no}**\n"
-                f"Arriving in **{due} min** (at **{arrival_str}**)\n"
-                f"Status: {status}\n"
+                f"Scheduled arrival: **{sched_arrival_str}**\n"
+                f"Scheduled departure: **{sched_depart_str}**\n"
+                f"Track: **{track}**\n"
+                f"ETA: Arriving in **{eta_minutes} min** (at **{sched_arrival_str}**)\n"
+                f"Status: {official_status}\n"
+
             )
 
         # Return everything as a single message
