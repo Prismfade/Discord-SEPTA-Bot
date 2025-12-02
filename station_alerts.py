@@ -1,7 +1,9 @@
+# station_alerts.py
+
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
-from Line_Subscription import get_user_subscriptions
+from Line_Subscription import get_user_subscriptions, notify_line
 import aiohttp
 import re
 import html as html_lib
@@ -110,7 +112,7 @@ def is_regional_rail(alert_obj) -> bool:
 
 def is_impactful_alert(text: str, level: str) -> bool:
     """
-    Decide if this alert should be surfaced based on alert level:
+    Decide if this alert should be surfaced based on alert level.
 
       - outages:            only "no service", "suspended", etc.
       - outages_and_delays: outages + specific delays (train # or minutes)
@@ -167,12 +169,14 @@ def is_impactful_alert(text: str, level: str) -> bool:
 # ------------------------ #
 
 class StationAlerts(commands.Cog):
-    """Automatic route alert monitoring (Regional Rail only, via SEPTA Alerts API)."""
+    """
+    Automatic Regional Rail alert monitoring via SEPTA Alerts API.
+    """
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        # Default alert level: outages + specific delays
-        self.alert_level = ALERT_LEVEL_OUTAGES_AND_DELAYS
+        # Start with outages only (you can change via setalertlevel)
+        self.alert_level = ALERT_LEVEL_OUTAGES_ONLY
         self.poll_routes_for_outages.start()
 
     def cog_unload(self):
@@ -201,7 +205,6 @@ class StationAlerts(commands.Cog):
 
     # ----- Sending alerts ----- #
     async def notify_route_alert(self, route_name: str, alert_text: str):
-        """Send a nicely formatted embed when a route gets a new alert."""
         channel = self.bot.get_channel(ALERT_CHANNEL_ID)
         if channel is None:
             return
@@ -227,10 +230,14 @@ class StationAlerts(commands.Cog):
 
         await channel.send(content=content, embed=embed)
 
+        try:
+            await notify_line(self.bot, route_name, clean_text)
+        except Exception:
+            pass
+
     # ----- Background task ----- #
     @tasks.loop(seconds=90)
     async def poll_routes_for_outages(self):
-        """Checks SEPTA Alerts feed every 90 seconds (Regional Rail only)."""
         try:
             alerts = await fetch_route_alerts()
         except Exception:
@@ -262,9 +269,7 @@ class StationAlerts(commands.Cog):
     async def before_poll(self):
         await self.bot.wait_until_ready()
 
-    # ---------------------------------------
-    # /alerts slash command (Regional Rail)
-    # ---------------------------------------
+    # ---------- /alerts ---------- #
     @app_commands.command(
         name="alerts",
         description="Show current Regional Rail service alerts from SEPTA (based on alert level).",
@@ -308,7 +313,6 @@ class StationAlerts(commands.Cog):
             description=(
                 f"Current alert level: **{mode_label}**\n"
                 "I show lines that are **down or having issues** on Regional Rail.\n"
-                "I can also check train delays, next arrivals, station outages, and more.\n"
                 "Type `!help` to get started.\n\n"
                 "Live data from SEPTA Alerts API."
             ),
@@ -339,9 +343,7 @@ class StationAlerts(commands.Cog):
 
         await interaction.followup.send(embed=embed, ephemeral=True)
 
-    # ---------------------------------------
-    # !alerts – prefix command
-    # ---------------------------------------
+    # ---------- !alerts ---------- #
     @commands.command(name="alerts")
     async def alerts_prefix(self, ctx: commands.Context):
         try:
@@ -379,7 +381,6 @@ class StationAlerts(commands.Cog):
             description=(
                 f"Current alert level: **{mode_label}**\n"
                 "I show lines that are **down or having issues** on Regional Rail.\n"
-                "I can also check train delays, next arrivals, station outages, and more.\n"
                 "Type `!help` to get started.\n\n"
                 "Live data from SEPTA Alerts API."
             ),
@@ -410,27 +411,31 @@ class StationAlerts(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    # ---------------------------------------
-    # !setalertlevel – opens dropdown menu
-    # ---------------------------------------
+    # ---------- setalertlevel (prefix + slash) ---------- #
     @commands.command(name="setalertlevel")
     async def set_alert_level_menu(self, ctx: commands.Context):
-        """
-        Open a dropdown menu to choose alert level.
-        Usage: !setalertlevel
-        """
         view = AlertLevelView(self)
         await ctx.send(
             "Choose how sensitive you want Regional Rail alerts to be:",
             view=view,
         )
 
-    # ---------------------------------------
-    # TEST ALERT COMMAND
-    # ---------------------------------------
+    @app_commands.command(
+        name="setalertlevel",
+        description="Choose how sensitive Regional Rail alerts should be.",
+    )
+    async def set_alert_level_slash(self, interaction: discord.Interaction):
+        view = AlertLevelView(self)
+        await interaction.response.send_message(
+            "Choose how sensitive you want Regional Rail alerts to be:",
+            view=view,
+            ephemeral=True,
+        )
+
+    # ---------- testalert (prefix + slash) ---------- #
     @commands.command(name="testalert")
-    async def testalert(self, ctx: commands.Context):
-        fake_route = "Test Route"
+    async def testalert_prefix(self, ctx: commands.Context):
+        fake_route = "Lansdale/Doylestown"
         fake_text = (
             "Service has been suspended on this line due to an emergency. "
             "Riders should expect no service for at least 30 minutes."
@@ -438,8 +443,21 @@ class StationAlerts(commands.Cog):
         await self.notify_route_alert(fake_route, fake_text)
         await ctx.send("✅ Test alert sent to the alert channel.")
 
+    @app_commands.command(
+        name="testalert",
+        description="Send a fake outage alert to the alert channel (for demos).",
+    )
+    async def testalert_slash(self, interaction: discord.Interaction):
+        fake_route = "Lansdale/Doylestown"
+        fake_text = (
+            "Service has been suspended on this line due to an emergency. "
+            "Riders should expect no service for at least 30 minutes."
+        )
+        await self.notify_route_alert(fake_route, fake_text)
+        await interaction.response.send_message(
+            "✅ Test alert sent to the alert channel.", ephemeral=True
+        )
 
-# ---------- UI: Dropdown View for !setalertlevel ---------- #
 
 class AlertLevelView(discord.ui.View):
     def __init__(self, cog: StationAlerts, *, timeout: float | None = 60):
@@ -485,7 +503,6 @@ class AlertLevelView(discord.ui.View):
             ALERT_LEVEL_ALL: "All Regional Rail alerts",
         }.get(chosen, "Unknown")
 
-        # Disable dropdown after selection
         for child in self.children:
             child.disabled = True
 
@@ -496,11 +513,6 @@ class AlertLevelView(discord.ui.View):
 
         await interaction.response.send_message(
             f"✅ Alert level set to **{mode_label}**.\n"
-            "This affects background alerts and `!alerts` / `/alerts`.",
+            "This affects background alerts and `!alerts` / `/alerts` / `/testalert`.",
             ephemeral=True,
         )
-
-
-# ----- setup() required for extensions ----- #
-async def setup(bot: commands.Bot):
-    await bot.add_cog(StationAlerts(bot))
