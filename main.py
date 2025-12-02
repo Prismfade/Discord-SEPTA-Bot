@@ -1,13 +1,21 @@
+import os
+import random
+import asyncio
+import logging
+from typing import List
+
 import discord
 from discord.ext import commands
-import logging
+from discord import app_commands
 from dotenv import load_dotenv
+
 from Select_menu import (
     LineView,
     build_subscribe_line_view,
     build_unsubscribe_view,
 )
 from dynamic_station import fetch_line_station_map
+
 from Line_Subscription import (
     subscribe_to_line,
     unsubscribe_to_line,
@@ -15,13 +23,7 @@ from Line_Subscription import (
     notify_line,
     user_line_subscriptions,
 )
-from Stations import normalize_station
-from Stations import REGIONAL_RAIL_STATIONS
-import os
-import random
-from discord import app_commands
-import asyncio
-from typing import List
+from Stations import normalize_station, REGIONAL_RAIL_STATIONS
 
 from Septa_Api import (
     get_regional_rail_status,
@@ -29,6 +31,7 @@ from Septa_Api import (
     get_next_train,
     stationList,
     get_station_arrivals,
+    get_unique_regional_rail_lines,  # ✅ needed for /check line status error handling
 )
 
 from station_alerts import StationAlerts  # alert/background cog
@@ -423,6 +426,7 @@ async def on_message(message: discord.Message):
 
     content = message.content.lower()
 
+    #      REGIONAL RAIL STATUS       #
     if "/regional rail status" in content:
         await message.channel.send("Fetching live SEPTA Regional Rail status… ")
         status_message = await get_regional_rail_status()
@@ -437,19 +441,73 @@ async def on_message(message: discord.Message):
             return m.author == message.author and m.channel == message.channel
 
         try:
-            user_msg = await bot.wait_for("message", check=check, timeout=20)
-            line_name = user_msg.content.strip()
-            await message.channel.send(
-                f"Fetching {line_name.title()} Line status… "
-            )
+            # Wait for the user to type a line name
+            user_msg = await bot.wait_for('message', check=check, timeout=20)
+            line_raw = user_msg.content.strip()
 
-            status_message = await get_line_status(line_name)
-            await message.channel.send(status_message)
+            if not line_raw:
+                await message.channel.send(
+                    "⚠️ You didn’t type a line name. Please try `/check line status` again."
+                )
+                return
 
-        except Exception:
-            await message.channel.send(
-                "⏰ You didn’t reply in time or an error occurred. Try again."
-            )
+            # Normalize a bit for display / lookup
+            line_name = line_raw.title()
+
+            # ✅ Check Rail error handling:
+            # Use SEPTA API helper to see what lines actually exist
+            try:
+                valid_lines = await get_unique_regional_rail_lines()
+            except Exception as e:
+                # If this helper fails, log it but don't crash the bot
+                logging.exception("Failed to load valid regional rail lines: %s", e)
+                valid_lines = []
+
+            # If we have a list, validate against it (case-insensitive)
+            if valid_lines:
+                user_lower = line_name.lower()
+                valid_lower = [l.lower() for l in valid_lines]
+
+                # 1️⃣ Exact match first
+                if user_lower not in valid_lower:
+                    # 2️⃣ Try partial match (e.g. "paoli" → "Paoli/Thorndale")
+                    partial_matches = [
+                        l for l in valid_lines
+                        if user_lower in l.lower()
+                    ]
+
+                    if len(partial_matches) == 1:
+                        # We found a unique match → use that canonical name
+                        line_name = partial_matches[0]
+                        await message.channel.send(
+                            f"Assuming you meant **{line_name}** based on what you typed."
+                        )
+                    else:
+                        # No match or too many ambiguous matches → show error + valid list
+                        await message.channel.send(
+                            "⚠️ I couldn't find that Regional Rail line.\n"
+                            f"You typed: **{line_raw}**\n\n"
+                            "Try one of these lines:\n"
+                            + ", ".join(sorted(valid_lines))
+                        )
+                        return
+
+            await message.channel.send(f"Fetching **{line_name}** Line status… ")
+
+            # ✅ API failure handling for get_line_status
+            try:
+                status_message = await get_line_status(line_name)
+                await message.channel.send(status_message)
+            except Exception as e:
+                logging.exception("Error in /check line status for %s", line_name)
+                await message.channel.send(
+                    "⚠️ Something went wrong while checking that line.\n"
+                    "This might be a SEPTA API issue. Please try again later."
+                )
+
+        except asyncio.TimeoutError:
+            # User never replied with a line name
+            await message.channel.send("⏰ You didn’t reply in time. Try `/check line status` again.")
 
     elif content.startswith("!next train"):
         user_input = content.replace("!next train", "").strip()
