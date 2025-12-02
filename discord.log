@@ -1,2 +1,79 @@
-[2025-12-01 11:43:04] [INFO    ] discord.client: logging in using static token
-[2025-12-01 11:43:05] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 4b39a40d624b5e3078a0905104edfbfe).
+[2025-12-02 15:17:35] [INFO    ] discord.client: logging in using static token
+[2025-12-02 15:17:36] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: ef8ec93a878ab8d28450cf4dd0b2c1ce).
+[2025-12-02 15:19:27] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+discord.ext.commands.errors.CommandNotFound: Command "help" is not found
+[2025-12-02 15:25:43] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'lines'
+Traceback (most recent call last):
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/main.py", line 217, in lines
+    await interaction.followup.send(
+    ...<2 lines>...
+    )
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/webhook/async_.py", line 1900, in send
+    data = await adapter.execute_webhook(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/webhook/async_.py", line 182, in request
+    async with session.request(
+               ~~~~~~~~~~~~~~~^
+        method, url, data=to_send, headers=headers, params=params, proxy=proxy, proxy_auth=proxy_auth
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/aiohttp/client.py", line 1510, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/aiohttp/client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/aiohttp/client.py", line 757, in _connect_and_send_request
+    await resp.start(conn)
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/aiohttp/client_reqrep.py", line 539, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/aiohttp/streams.py", line 680, in read
+    await self._waiter
+aiohttp.client_exceptions.ServerDisconnectedError: Server disconnected
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/main.py", line 234, in lines
+    await interaction.followup.send(
+        "⚠️ Something went wrong while looking up that station. Please try again."
+    )
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/webhook/async_.py", line 1900, in send
+    data = await adapter.execute_webhook(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/webhook/async_.py", line 182, in request
+    async with session.request(
+               ~~~~~~~~~~~~~~~^
+        method, url, data=to_send, headers=headers, params=params, proxy=proxy, proxy_auth=proxy_auth
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/aiohttp/client.py", line 1510, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/aiohttp/client.py", line 529, in _request
+    raise RuntimeError("Session is closed")
+RuntimeError: Session is closed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justinpham/Documents/GitHub/Discord-SEPTA-Bot/.venv/lib/python3.14/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'lines' raised an exception: RuntimeError: Session is closed

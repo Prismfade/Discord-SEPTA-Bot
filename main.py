@@ -118,6 +118,122 @@ async def station(interaction: discord.Interaction,name: str):
     result = await get_station_arrivals(station_norm)
     await interaction.response.send_message(result)
 
+@bot.tree.command(name="check_line_status", description="Lets you check any specific train line.")
+@app_commands.describe(name="Type a Regional Rail line")
+async def station(interaction: discord.Interaction, name: str):
+    await interaction.response.send_message(
+        "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)"
+    )
+    def check(m):
+        return (
+            m.author.id == interaction.user.id and
+            m.channel.id == interaction.channel.id
+        )
+    try:
+        user_msg = await bot.wait_for("message", check=check, timeout=20)
+        line_name = user_msg.content.strip()
+        await interaction.followup.send(f"Fetching **{line_name.title()} Line** status…")
+
+        status_message = await get_line_status(line_name)
+        await interaction.followup.send(status_message)
+    # calls when time out
+    except Exception:
+        await interaction.followup.send(
+            "⏰ You didn’t reply in time or an error occurred. Try again."
+        )
+
+@bot.tree.command(name="next_train", description="Shows the next train between two stations.")
+@app_commands.describe(origin="Origin Regional Rail station", destination="Destination Regional Rail station")
+async def next_train(
+    interaction: discord.Interaction,
+    origin: str,
+    destination: str
+):
+    # Normalize user input
+    origin_norm = normalize_station(origin)
+    dest_norm = normalize_station(destination)
+
+    # --- Station validation (Check Station requirement) ---
+    invalid_bits = []
+
+    if origin_norm not in REGIONAL_RAIL_STATIONS:
+        invalid_bits.append(f"origin station **{origin}**")
+
+    if dest_norm not in REGIONAL_RAIL_STATIONS:
+        invalid_bits.append(f"destination station **{destination}**")
+
+    if invalid_bits:
+        msg = (
+            "⚠️ I couldn't find "
+            + " and ".join(invalid_bits)
+            + " in the Regional Rail station list.\n"
+            "Please check the spelling, or try `/station` to look up a station."
+        )
+        await interaction.response.send_message(msg)
+        return
+
+    # --- If both stations look valid, call the API ---
+    await interaction.response.send_message(
+        f"Fetching the next train from **{origin_norm} → {dest_norm}**…"
+    )
+
+    try:
+        status_message = await get_next_train(origin_norm, dest_norm)
+        await interaction.followup.send(status_message)
+    except Exception:
+        logging.exception(
+            "Error in /next_train origin=%s dest=%s",
+            origin_norm,
+            dest_norm,
+        )
+        await interaction.followup.send(
+            "⚠️ Sorry, something went wrong while fetching that trip.\n"
+            "Please double-check your station names or try again in a minute."
+        )
+
+@bot.tree.command(name="lines", description="Shows what lines serve a Regional Rail station.")
+async def lines(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        "Which station do you want to check? (e.g. Temple University, Suburban Station)"
+    )
+
+    def check(m: discord.Message):
+        return (
+            m.author.id == interaction.user.id and
+            m.channel.id == interaction.channel.id
+        )
+
+    try:
+        user_msg = await bot.wait_for("message", check=check, timeout=20)
+        station_raw = user_msg.content.strip()
+        station_norm = normalize_station(station_raw)
+
+        from Septa_Api import build_station_line_map
+        station_map = await build_station_line_map()
+
+        lines_for_station = station_map.get(station_norm)
+
+        if not lines_for_station:
+            await interaction.followup.send(
+                f"⚠️ I couldn't find any lines serving **{station_raw}**.\n"
+                "Please check the spelling, or try `/station` to look up arrivals."
+            )
+            return
+
+        lines_list = ", ".join(sorted(lines_for_station))
+        await interaction.followup.send(
+            f"🚆 **{station_norm}** is served by these lines:\n{lines_list}"
+        )
+
+    except asyncio.TimeoutError:
+        await interaction.followup.send(
+            "⏰ You didn’t reply in time. Try `/lines` again when you’re ready."
+        )
+    except Exception:
+        logging.exception("Error in /lines command")
+        await interaction.followup.send(
+            "⚠️ Something went wrong while looking up that station. Please try again."
+        )
 
 @bot.tree.command(name="sync", description="Force global sync")
 async def sync(interaction: discord.Interaction):
