@@ -36,6 +36,11 @@ from Septa_Api import (
 
 from station_alerts import StationAlerts  # alert/background cog
 
+#box_text format
+
+def box(text: str)-> str:
+    return f"```\n{text}\n```"
+
 COMMAND_LIST = []
 
 
@@ -44,12 +49,18 @@ def register(cmd_name: str):
 
 
 register("/help")
-register("/regional rail status")
-register("/check line status")
-register("/next train")
+register("/regional_rail_status")
+register("/check_line_status")
+register("/next_train")
 register("/station")
 register("/menu")
 register("/lines")
+register("/hello")
+register("/unsubscribe_line")
+register("/my_subscriptions")
+register("/subscribemenu")
+register("/unsubscribemenu")
+
 
 # ---------------------------
 # ENV + TOKEN
@@ -111,7 +122,7 @@ async def on_ready():
         await channel.send(
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, station information, and send outage alerts.\n"
-            "Type **!help** to see what I can do!\n"
+            "Type **/help** to see what I can do!\n"
         )
 
 
@@ -127,9 +138,9 @@ async def hello(interaction: discord.Interaction):
     name="regional_rail_status", description="Shows live delays on all Regional Rail trains."
 )
 async def regional_rail_status(interaction: discord.Interaction):
-    await interaction.response.send_message("Fetching live status…")
+    await interaction.response.send_message(box("Fetching live status…"))
     status_message = await get_regional_rail_status()
-    await interaction.followup.send(status_message)
+    await interaction.followup.send(box(status_message))
 
 
 @bot.tree.command(name="station", description="Get arrival times for a station")
@@ -137,7 +148,7 @@ async def regional_rail_status(interaction: discord.Interaction):
 async def station(interaction: discord.Interaction, name: str):
     station_norm = normalize_station(name)
     result = await get_station_arrivals(station_norm)
-    await interaction.response.send_message(result)
+    await interaction.response.send_message(box(result))
 
 
 @bot.tree.command(
@@ -145,9 +156,9 @@ async def station(interaction: discord.Interaction, name: str):
 )
 @app_commands.describe(name="Type a Regional Rail line")
 async def check_line_status_slash(interaction: discord.Interaction, name: str):
-    await interaction.response.send_message(
+    await interaction.response.send_message(box(
         "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)"
-    )
+    ))
 
     def check(m: discord.Message):
         return (
@@ -161,11 +172,11 @@ async def check_line_status_slash(interaction: discord.Interaction, name: str):
         await interaction.followup.send(f"Fetching **{line_name.title()} Line** status…")
 
         status_message = await get_line_status(line_name)
-        await interaction.followup.send(status_message)
+        await interaction.followup.send(box(status_message))
     except Exception:
-        await interaction.followup.send(
+        await interaction.followup.send(box(
             "⏰ You didn’t reply in time or an error occurred. Try again."
-        )
+        ))
 
 
 @bot.tree.command(
@@ -201,13 +212,13 @@ async def next_train_slash(
         await interaction.response.send_message(msg)
         return
 
-    await interaction.response.send_message(
+    await interaction.response.send_message(box(
         f"Fetching the next train from **{origin_norm} → {dest_norm}**…"
-    )
+    ))
 
     try:
         status_message = await get_next_train(origin_norm, dest_norm)
-        await interaction.followup.send(status_message)
+        await interaction.followup.send(box(status_message))
     except Exception:
         logging.exception(
             "Error in /next_train origin=%s dest=%s",
@@ -224,9 +235,9 @@ async def next_train_slash(
     name="lines", description="Shows what lines serve a Regional Rail station."
 )
 async def lines_slash(interaction: discord.Interaction):
-    await interaction.response.send_message(
+    await interaction.response.send_message(box(
         "Which station do you want to check? (e.g. Temple University, Suburban Station)"
-    )
+    ))
 
     def check(m: discord.Message):
         return (
@@ -245,16 +256,16 @@ async def lines_slash(interaction: discord.Interaction):
         lines_for_station = station_map.get(station_norm)
 
         if not lines_for_station:
-            await interaction.followup.send(
+            await interaction.followup.send(box(
                 f"⚠️ I couldn't find any lines serving **{station_raw}**.\n"
                 "Please check the spelling, or try `/station` to look up arrivals."
-            )
+            ))
             return
 
         lines_list = ", ".join(sorted(lines_for_station))
-        await interaction.followup.send(
+        await interaction.followup.send(box(
             f"🚆 **{station_norm}** is served by these lines:\n{lines_list}"
-        )
+        ))
 
     except asyncio.TimeoutError:
         await interaction.followup.send(
@@ -270,7 +281,7 @@ async def lines_slash(interaction: discord.Interaction):
 @bot.tree.command(name="sync", description="Force global sync")
 async def sync_slash(interaction: discord.Interaction):
     await bot.tree.sync()
-    await interaction.response.send_message("Global commands synced!")
+    await interaction.response.send_message(box("Global commands synced!"))
 
 
 # ---------- Slash subscription commands (simple text) ---------- #
@@ -317,6 +328,28 @@ async def my_subscriptions_slash(interaction: discord.Interaction):
         msg = f"You're subscribed to alerts for:\n**{lines}**"
     await interaction.response.send_message(msg, ephemeral=True)
 
+@bot.tree.command(name="help", description="Show all available commands for the SEPTA bot.")
+async def help_slash(interaction: discord.Interaction):
+    help_text = """Available Commands:
+
+/regional_rail_status - Live delays for all Regional Rail trains.
+/check_line_status - Check any specific train line.
+/next_train - Next train between two stations.
+/station - Arrivals for a station.
+/lines - What lines serve a station.
+
+/subscribe_line - Subscribe to outage alerts.
+/unsubscribe_line - Unsubscribe from alerts.
+/my_subscriptions - See your subscriptions.
+/subscribemenu - Dropdown to subscribe.
+/unsubscribemenu - Dropdown to unsubscribe.
+
+!subscribe - Prefix subscribe.
+!unsubscribe - Prefix unsubscribe.
+!mysubscriptions - Prefix list.
+"""
+
+    await interaction.response.send_message(f"```\n{help_text}\n```")
 
 # Autocomplete for /station
 @station.autocomplete("name")
@@ -426,251 +459,196 @@ async def on_message(message: discord.Message):
 
     content = message.content.lower()
 
-    #      REGIONAL RAIL STATUS       #
-    if "/regional rail status" in content:
-        await message.channel.send("Fetching live SEPTA Regional Rail status… ")
-        status_message = await get_regional_rail_status()
-        await message.channel.send(status_message)
+    # if "/regional rail status" in content:
+    #     await message.channel.send("Fetching live SEPTA Regional Rail status… ")
+    #     status_message = await get_regional_rail_status()
+    #     await message.channel.send(box(status_message))
 
-    elif "/check line status" in content:
-        await message.channel.send(
-            "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)"
-        )
+    # elif "/check line status" in content:
+    #     await message.channel.send(
+    #         "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)"
+    #     )
 
-        def check(m: discord.Message):
-            return m.author == message.author and m.channel == message.channel
+    #     def check(m: discord.Message):
+    #         return m.author == message.author and m.channel == message.channel
 
-        try:
-            # Wait for the user to type a line name
-            user_msg = await bot.wait_for('message', check=check, timeout=20)
-            line_raw = user_msg.content.strip()
+    #     try:
+    #         user_msg = await bot.wait_for("message", check=check, timeout=20)
+    #         line_name = user_msg.content.strip()
+    #         await message.channel.send(
+    #             f"Fetching {line_name.title()} Line status… "
+    #         )
 
-            if not line_raw:
-                await message.channel.send(
-                    "⚠️ You didn’t type a line name. Please try `/check line status` again."
-                )
-                return
+    #         status_message = await get_line_status(line_name)
+    #         await message.channel.send(box(status_message))
 
-            # Normalize a bit for display / lookup
-            line_name = line_raw.title()
+    #     except Exception:
+    #         await message.channel.send(box(
+    #             "⏰ You didn’t reply in time or an error occurred. Try again."
+    #         ))
 
-            # ✅ Check Rail error handling:
-            # Use SEPTA API helper to see what lines actually exist
-            try:
-                valid_lines = await get_unique_regional_rail_lines()
-            except Exception as e:
-                # If this helper fails, log it but don't crash the bot
-                logging.exception("Failed to load valid regional rail lines: %s", e)
-                valid_lines = []
+    # elif content.startswith("!next train"):
+    #     user_input = content.replace("!next train", "").strip()
+    #     parts = user_input.split()
 
-            # If we have a list, validate against it (case-insensitive)
-            if valid_lines:
-                user_lower = line_name.lower()
-                valid_lower = [l.lower() for l in valid_lines]
+    #     if len(parts) >= 2:
+    #         origin_raw = parts[0]
+    #         dest_raw = " ".join(parts[1:])
 
-                # 1️⃣ Exact match first
-                if user_lower not in valid_lower:
-                    # 2️⃣ Try partial match (e.g. "paoli" → "Paoli/Thorndale")
-                    partial_matches = [
-                        l for l in valid_lines
-                        if user_lower in l.lower()
-                    ]
+    #         origin_norm = normalize_station(origin_raw)
+    #         dest_norm = normalize_station(dest_raw)
 
-                    if len(partial_matches) == 1:
-                        # We found a unique match → use that canonical name
-                        line_name = partial_matches[0]
-                        await message.channel.send(
-                            f"Assuming you meant **{line_name}** based on what you typed."
-                        )
-                    else:
-                        # No match or too many ambiguous matches → show error + valid list
-                        await message.channel.send(
-                            "⚠️ I couldn't find that Regional Rail line.\n"
-                            f"You typed: **{line_raw}**\n\n"
-                            "Try one of these lines:\n"
-                            + ", ".join(sorted(valid_lines))
-                        )
-                        return
+    #         invalid_bits = []
 
-            await message.channel.send(f"Fetching **{line_name}** Line status… ")
+    #         if origin_norm not in REGIONAL_RAIL_STATIONS:
+    #             invalid_bits.append(f"origin station **{origin_raw}**")
 
-            # ✅ API failure handling for get_line_status
-            try:
-                status_message = await get_line_status(line_name)
-                await message.channel.send(status_message)
-            except Exception as e:
-                logging.exception("Error in /check line status for %s", line_name)
-                await message.channel.send(
-                    "⚠️ Something went wrong while checking that line.\n"
-                    "This might be a SEPTA API issue. Please try again later."
-                )
+    #         if dest_norm not in REGIONAL_RAIL_STATIONS:
+    #             invalid_bits.append(f"destination station **{dest_raw}**")
 
-        except asyncio.TimeoutError:
-            # User never replied with a line name
-            await message.channel.send("⏰ You didn’t reply in time. Try `/check line status` again.")
+    #         if invalid_bits:
+    #             msg = (
+    #                 "⚠️ I couldn't find "
+    #                 + " and ".join(invalid_bits)
+    #                 + " in the Regional Rail station list.\n"
+    #                 "Please check the spelling, or try `/station` to look up a station."
+    #             )
+    #             await message.channel.send(box(msg))
+    #             return
 
-    elif content.startswith("!next train"):
-        user_input = content.replace("!next train", "").strip()
-        parts = user_input.split()
+    #         await message.channel.send(box(
+    #             f"Fetching the next train from **{origin_norm} → {dest_norm}**…"
+    #         ))
 
-        if len(parts) >= 2:
-            origin_raw = parts[0]
-            dest_raw = " ".join(parts[1:])
+    #         try:
+    #             status_message = await get_next_train(origin_norm, dest_norm)
+    #             await message.channel.send(box(status_message))
+    #         except Exception:
+    #             logging.exception(
+    #                 "Error in /next train (one-line) origin=%s dest=%s",
+    #                 origin_norm,
+    #                 dest_norm,
+    #             )
+    #             await message.channel.send(box(
+    #                 "⚠️ Sorry, something went wrong while fetching that trip.\n"
+    #                 "Please double-check your station names or try again in a minute."
+    #             ))
+    #         return
 
-            origin_norm = normalize_station(origin_raw)
-            dest_norm = normalize_station(dest_raw)
+    #     def check(m: discord.Message):
+    #         return m.author == message.author and m.channel == message.channel
 
-            invalid_bits = []
+    #     await message.channel.send(box("What station are you getting on at?"))
 
-            if origin_norm not in REGIONAL_RAIL_STATIONS:
-                invalid_bits.append(f"origin station **{origin_raw}**")
+    #     try:
+    #         origin_msg = await bot.wait_for("message", check=check, timeout=20)
+    #         origin_raw = origin_msg.content.strip()
+    #         origin_norm = normalize_station(origin_raw)
 
-            if dest_norm not in REGIONAL_RAIL_STATIONS:
-                invalid_bits.append(f"destination station **{dest_raw}**")
+    #         if origin_norm.lower() != origin_raw.lower():
+    #             await message.channel.send(box(f"Did you mean **{origin_norm}**?"))
 
-            if invalid_bits:
-                msg = (
-                    "⚠️ I couldn't find "
-                    + " and ".join(invalid_bits)
-                    + " in the Regional Rail station list.\n"
-                    "Please check the spelling, or try `/station` to look up a station."
-                )
-                await message.channel.send(msg)
-                return
+    #         await message.channel.send(box(
+    #             f"➡️ Where are you going from **{origin_norm}**?")
+    #         )
+    #         dest_msg = await bot.wait_for("message", check=check, timeout=20)
+    #         dest_raw = dest_msg.content.strip()
+    #         dest_norm = normalize_station(dest_raw)
 
-            await message.channel.send(
-                f"Fetching the next train from **{origin_norm} → {dest_norm}**…"
-            )
+    #         if dest_norm.lower() != dest_raw.lower():
+    #             await message.channel.send(box(f"Did you mean **{dest_norm}**?"))
 
-            try:
-                status_message = await get_next_train(origin_norm, dest_norm)
-                await message.channel.send(status_message)
-            except Exception:
-                logging.exception(
-                    "Error in /next train (one-line) origin=%s dest=%s",
-                    origin_norm,
-                    dest_norm,
-                )
-                await message.channel.send(
-                    "⚠️ Sorry, something went wrong while fetching that trip.\n"
-                    "Please double-check your station names or try again in a minute."
-                )
-            return
+    #         await message.channel.send(box(
+    #             "Use the corrected names?\n"
+    #             f"- {origin_norm}\n"
+    #             f"- {dest_norm}\n"
+    #             "(yes / no)"
+    #         ))
 
-        def check(m: discord.Message):
-            return m.author == message.author and m.channel == message.channel
+    #         confirm = await bot.wait_for("message", check=check, timeout=15)
+    #         ans = confirm.content.lower()
 
-        await message.channel.send("What station are you getting on at?")
+    #         if ans.startswith("y"):
+    #             origin_final = origin_norm
+    #             dest_final = dest_norm
+    #         else:
+    #             origin_final = origin_raw
+    #             dest_final = dest_raw
 
-        try:
-            origin_msg = await bot.wait_for("message", check=check, timeout=20)
-            origin_raw = origin_msg.content.strip()
-            origin_norm = normalize_station(origin_raw)
+    #         if origin_norm not in REGIONAL_RAIL_STATIONS:
+    #             raise ValueError(
+    #                 f"Origin station **{origin_norm}** does not exist."
+    #             )
 
-            if origin_norm.lower() != origin_raw.lower():
-                await message.channel.send(f"Did you mean **{origin_norm}**?")
+    #         if dest_norm not in REGIONAL_RAIL_STATIONS:
+    #             raise ValueError(
+    #                 f"Destination station **{dest_norm}** does not exist."
+    #             )
 
-            await message.channel.send(
-                f"➡️ Where are you going from **{origin_norm}**?"
-            )
-            dest_msg = await bot.wait_for("message", check=check, timeout=20)
-            dest_raw = dest_msg.content.strip()
-            dest_norm = normalize_station(dest_raw)
+    #         await message.channel.send(box(
+    #             f"Fetching the next train from **{origin_final} → {dest_final}**…"
+    #         ))
 
-            if dest_norm.lower() != dest_raw.lower():
-                await message.channel.send(f"Did you mean **{dest_norm}**?")
+    #         status_message = await get_next_train(origin_final, dest_final)
+    #         await message.channel.send(status_message)
 
-            await message.channel.send(
-                "Use the corrected names?\n"
-                f"- {origin_norm}\n"
-                f"- {dest_norm}\n"
-                "(yes / no)"
-            )
+    #     except asyncio.TimeoutError:
+    #         await message.channel.send(box("⏰ You didn’t reply in time. Try again."))
 
-            confirm = await bot.wait_for("message", check=check, timeout=15)
-            ans = confirm.content.lower()
+    #     except ValueError as e:
+    #         await message.channel.send(box(f"❌ {str(e)}"))
 
-            if ans.startswith("y"):
-                origin_final = origin_norm
-                dest_final = dest_norm
-            else:
-                origin_final = origin_raw
-                dest_final = dest_raw
+    #     except Exception as e:
+    #         await message.channel.send(box(
+    #             "⚠️ Something went wrong while checking the next train. "
+    #             "This may be a SEPTA API issue. Please try again later."
+    #         ))
+    #         print("Unexpected error in /next train:", e)
 
-            if origin_norm not in REGIONAL_RAIL_STATIONS:
-                raise ValueError(
-                    f"Origin station **{origin_norm}** does not exist."
-                )
+    # elif "/help" in content:
+    #     help_text = "**Available Commands:**\n\n"
 
-            if dest_norm not in REGIONAL_RAIL_STATIONS:
-                raise ValueError(
-                    f"Destination station **{dest_norm}** does not exist."
-                )
+    #     HELP_DICT = {
+    #         "/help": "Shows this help menu.",
+    #         "/regional rail status": "Shows live delays for all Regional Rail trains.",
+    #         "/check line status": "Lets you check any specific train line.",
+    #         "/next train": "Shows the next train between two stations.",
+    #         "/station name": "Shows Regional Rail Lines that stop at selected station.",
+    #         "/menu": "Shows the list of Regional Rail Line for user to select",
+    #         "/lines": "Shows what lines serve the station",
+    #         "!subscribe": "Subscribe to outage alerts for a line (e.g. !subscribe Lansdale/Doylestown).",
+    #         "!unsubscribe": "Unsubscribe from outage alerts for a line.",
+    #         "!mysubscriptions": "List the lines you are subscribed to.",
+    #         "!subscribemenu": "Open a dropdown to pick a line to subscribe.",
+    #         "!unsubscribemenu": "Open a dropdown to pick a line to unsubscribe.",
+    #     }
 
-            await message.channel.send(
-                f"Fetching the next train from **{origin_final} → {dest_final}**…"
-            )
+    #     for cmd, desc in HELP_DICT.items():
+    #         help_text += f"{cmd} — {desc}\n"
 
-            status_message = await get_next_train(origin_final, dest_final)
-            await message.channel.send(status_message)
+    #     await message.channel.send(box(help_text))
 
-        except asyncio.TimeoutError:
-            await message.channel.send("⏰ You didn’t reply in time. Try again.")
+    # elif "/lines" in content:
+    #     await message.channel.send(box("Which station do you want to check?"))
 
-        except ValueError as e:
-            await message.channel.send(f"❌ {str(e)}")
+    #     def check(m: discord.Message):
+    #         return m.author == message.author and m.channel == message.channel
 
-        except Exception as e:
-            await message.channel.send(
-                "⚠️ Something went wrong while checking the next train. "
-                "This may be a SEPTA API issue. Please try again later."
-            )
-            print("Unexpected error in /next train:", e)
+    #     try:
+    #         user_msg = await bot.wait_for("message", check=check, timeout=20)
+    #         station_raw = user_msg.content.strip()
+    #         station_norm = normalize_station(station_raw)
 
-    elif "/help" in content:
-        help_text = "**Available Commands:**\n\n"
+    #         result = await get_station_arrivals(station_norm)
+    #         await message.channel.send(result)
 
-        HELP_DICT = {
-            "/help": "Shows this help menu.",
-            "/regional rail status": "Shows live delays for all Regional Rail trains.",
-            "/check line status": "Lets you check any specific train line.",
-            "/next train": "Shows the next train between two stations.",
-            "/station name": "Shows Regional Rail Lines that stop at selected station.",
-            "/menu": "Shows the list of Regional Rail Line for user to select",
-            "/lines": "Shows what lines serve the station",
-            "!subscribe": "Subscribe to outage alerts for a line (e.g. !subscribe Lansdale/Doylestown).",
-            "!unsubscribe": "Unsubscribe from outage alerts for a line.",
-            "!mysubscriptions": "List the lines you are subscribed to.",
-            "!subscribemenu": "Open a dropdown to pick a line to subscribe.",
-            "!unsubscribemenu": "Open a dropdown to pick a line to unsubscribe.",
-        }
-
-        for cmd, desc in HELP_DICT.items():
-            help_text += f"{cmd} — {desc}\n"
-
-        await message.channel.send(help_text)
-
-    elif "/lines" in content:
-        await message.channel.send("Which station do you want to check?")
-
-        def check(m: discord.Message):
-            return m.author == message.author and m.channel == message.channel
-
-        try:
-            user_msg = await bot.wait_for("message", check=check, timeout=20)
-            station_raw = user_msg.content.strip()
-            station_norm = normalize_station(station_raw)
-
-            result = await get_station_arrivals(station_norm)
-            await message.channel.send(result)
-
-        except Exception:
-            await message.channel.send(
-                "⏰ You didn’t reply in time. Try again."
-            )
+    #     except Exception:
+    #         await message.channel.send(box(
+    #             "⏰ You didn’t reply in time. Try again."
+    #         ))
 
     # NEW: handle plain-text "/subscribemenu" like the prefix command
-    elif content.startswith("/subscribemenu"):
+    if content.startswith("/subscribemenu"):
         line_map = await fetch_line_station_map()
         lines = sorted(line_map.keys())
 
@@ -685,9 +663,9 @@ async def on_message(message: discord.Message):
         user_id = message.author.id
         subs = await get_user_subscriptions(user_id)
         if not subs:
-            await message.channel.send(
+            await message.channel.send(box(
                 f"{message.author.mention} you are not subscribed to any lines yet."
-            )
+            ))
         else:
             lines = sorted(subs)
             view = UnsubscribeLineView(lines, user_id)
