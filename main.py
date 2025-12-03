@@ -1,13 +1,21 @@
+import os
+import random
+import asyncio
+import logging
+from typing import List
+
 import discord
 from discord.ext import commands
-import logging
+from discord import app_commands
 from dotenv import load_dotenv
+
 from Select_menu import (
     LineView,
     build_subscribe_line_view,
     build_unsubscribe_view,
 )
 from dynamic_station import fetch_line_station_map
+
 from Line_Subscription import (
     subscribe_to_line,
     unsubscribe_to_line,
@@ -15,13 +23,7 @@ from Line_Subscription import (
     notify_line,
     user_line_subscriptions,
 )
-from Stations import normalize_station
-from Stations import REGIONAL_RAIL_STATIONS
-import os
-import random
-from discord import app_commands
-import asyncio
-from typing import List
+from Stations import normalize_station, REGIONAL_RAIL_STATIONS
 
 from Septa_Api import (
     get_regional_rail_status,
@@ -29,6 +31,7 @@ from Septa_Api import (
     get_next_train,
     stationList,
     get_station_arrivals,
+    get_unique_regional_rail_lines,  # ✅ needed for /check line status error handling
 )
 
 from station_alerts import StationAlerts  # alert/background cog
