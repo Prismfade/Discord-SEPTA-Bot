@@ -25,3 +25,229 @@ Traceback (most recent call last):
   File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
     raise CommandInvokeError(self, e) from e
 discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 11:56:53] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 158, in check_line_status_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 226, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: HTTPException: 400 Bad Request (error code: 40060): Interaction has already been acknowledged.
+[2025-12-03 11:57:43] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 158, in check_line_status_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 11:57:51] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 158, in check_line_status_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 11:58:07] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 158, in check_line_status_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 11:59:17] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 158, in check_line_status_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 11:59:36] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 158, in check_line_status_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 11:59:59] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 158, in check_line_status_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 12:01:57] [WARNING ] discord.http: We are being rate limited. PUT https://discord.com/api/v10/applications/1428405645954121790/commands responded with 429. Retrying in 5.94 seconds.
+[2025-12-03 12:03:03] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'sync'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 283, in sync_slash
+    name="subscribe_line",
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-03 12:03:08] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'lines'
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/Desktop/Discord-SEPTA-Bot/main.py", line 237, in lines_slash
+    m.author.id == interaction.user.id
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/christnekapp/anaconda3/lib/python3.11/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'lines' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction

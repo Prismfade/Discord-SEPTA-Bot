@@ -11,8 +11,6 @@ from dotenv import load_dotenv
 
 from Select_menu import (
     LineView,
-    build_subscribe_line_view,
-    build_unsubscribe_view,
 )
 from dynamic_station import fetch_line_station_map
 
@@ -20,8 +18,6 @@ from Line_Subscription import (
     subscribe_to_line,
     unsubscribe_to_line,
     get_user_subscriptions,
-    notify_line,
-    user_line_subscriptions,
 )
 from Stations import normalize_station, REGIONAL_RAIL_STATIONS
 
@@ -29,9 +25,7 @@ from Septa_Api import (
     get_regional_rail_status,
     get_line_status,
     get_next_train,
-    stationList,
     get_station_arrivals,
-    get_unique_regional_rail_lines,  # ✅ needed for /check line status error handling
 )
 
 from station_alerts import StationAlerts  # alert/background cog
