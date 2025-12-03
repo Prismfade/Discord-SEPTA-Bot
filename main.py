@@ -337,11 +337,9 @@ async def help_slash(interaction: discord.Interaction):
 /station - Arrivals for a station.
 /lines - What lines serve a station.
 
-/subscribe_line - Subscribe to outage alerts.
-/unsubscribe_line - Unsubscribe from alerts.
 /my_subscriptions - See your subscriptions.
-/subscribemenu - Dropdown to subscribe.
-/unsubscribemenu - Dropdown to unsubscribe.
+/subscribemenu - Subscribe to outage alerts.
+/unsubscribemenu - Unsubscribe from alerts.
 
 !subscribe - Prefix subscribe.
 !unsubscribe - Prefix unsubscribe.
