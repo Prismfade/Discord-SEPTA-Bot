@@ -73,7 +73,26 @@
 ## About The Project
 
 <p align="left"><a href=" " ><img src="README Assets/Chat-Screenshot.jpeg" width="100%" height="100%" alt="Demo Video"></a></p>
-<p>Start typing here.</p>
+
+### 📌 Overview
+
+This bot provides live SEPTA Regional Rail updates directly inside Discord — delays, cancellations, arrival times, outages, and station alerts — all pulled from the official SEPTA Regional Rail API’s real-time JSON feeds.
+
+It’s built for commuters, Philly-based servers, transit enthusiasts, and anyone who wants accurate train information without opening a website or app. Every response is formatted as a clean Discord embed, and users interact with the bot through slash commands, dropdown menus, autocompleted options, and classic prefix commands.
+
+Beyond one-off status checks, the bot functions like a personal transit assistant. Users can subscribe to specific lines and automatically receive background-pushed outage alerts as soon as the API updates — no refreshing, no searching, no guessing.
+
+### 🔍 What It Can Do
+
+* Live network snapshot showing the full Regional Rail system’s current state
+* Line-specific status checks (delays, canceled trips, severe disruptions)
+* Station arrival boards with upcoming trains and ETAs
+* Route finder showing the next available train between two stations
+* Station → line lookup so users see what lines serve a given location
+* Interactive dropdown menus for subscribing/unsubscribing to outage notifications
+* Automatic background alerts posted into a designated Discord channel
+* Autocomplete support to prevent station name typos
+* Fun, personality-based responses and small easter-egg interactions
 
 <!-- Original README -->
 <!--## Keywords 
@@ -110,17 +129,16 @@ To preface the reasoning behind the project, SEPTA has been going through many p
 
 Currently a resource that might just needed is a server to host the program to run at all times. The line of code must be running at all times in order for the bot to work. Otherwise I've been able to test the server locally through my terminal environment.-->
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
-### Built With
+### 🔨 Built With
 
 This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 
 * <a href="https://www.python.org"><img src="README Assets/python-logo.png" width="120" height="40" alt="Python"></a>
 * <a href="https://docs.aiohttp.org/en/stable"><img src="README Assets/aiohttp-logo.png" width="120" height="40" alt="Aiohttp"></a>
 * <a href="https://api.septa.org"><img src="README Assets/septa-logo.jpeg" width="120" height="40" alt="Septa"></a>
+* <a href="https://discordpy.readthedocs.io/en/stable"><img src="README Assets/discord-logo.png" width="120" height="40" alt="Discord"></a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
