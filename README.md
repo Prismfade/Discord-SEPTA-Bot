@@ -1,4 +1,81 @@
-## Keywords 
+<!-- Template Source: https://github.com/othneildrew/Best-README-Template -->
+
+<a id="readme-top"></a>
+<p align="center">
+  <img src="README Assets/Screenshot2.png" alt="Banner" width="100%" />
+</p>
+
+
+<!-- PROJECT SHIELDS -->
+<a href="https://github.com/Prismfade/Discord-SEPTA-Bot/graphs/contributors"><img src="README Assets/Contributor-Shield.png" width="120" height="30" alt="Contributors 5"></a>
+<a href=" "><img src="README Assets/Linkedin-Shield1.png" width="100" height="30" alt="Linkedin Shield 1"></a>
+<a href="https://www.linkedin.com/in/christine-kapp-658b41238"><img src="README Assets/Linkedin-Shield2.png" width="100" height="30" alt="Linkedin Shield 2"></a>
+<a href=" "><img src="README Assets/Linkedin-Shield3.png" width="100" height="30" alt="Linkedin Shield 3"></a>
+<a href=" "><img src="README Assets/Linkedin-Shield4.png" width="100" height="30" alt="Linkedin Shield 4"></a>
+<a href=" "><img src="README Assets/Linkedin-Shield5.png" width="100" height="30" alt="Linkedin Shield 5"></a>
+
+
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/Prismfade/Discord-SEPTA-Bot">
+    <img src="/Users/christnekapp/Desktop/Discord-SEPTA-Bot/README Assets/logo.png" alt="Logo" width="200" height="200">
+  </a>
+
+  <h3 align="center">SEPTA Discord Bot</h3>
+
+  <p align="center">
+    A bot that brings real-time SEPTA Regional Rail data straight into your Discord server.
+    <br />
+    <a href="https://github.com/Prismfade/Discord-SEPTA-Bot"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href=" ">View Demo</a>
+    &middot;
+    <a href=" ">Report Bug</a>
+    &middot;
+    <a href=" ">Request Feature</a>
+  </p>
+</div>
+
+
+
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
+
+
+
+<!-- ABOUT THE PROJECT -->
+## About The Project
+
+<p align="left"><a href=" " ><img src="README Assets/Chat-Screenshot.jpeg" width="100%" height="100%" alt="Demo Video"></a></p>
+<p>Start typing here.</p>
+
+<!-- Original README -->
+<!--## Keywords 
 
 #Discord #Bot #Transportation #Philadelphia #Python #SEPTA API
 
@@ -30,4 +107,104 @@ To preface the reasoning behind the project, SEPTA has been going through many p
 
 ## Required Resources
 
-Currently a resource that might just needed is a server to host the program to run at all times. The line of code must be running at all times in order for the bot to work. Otherwise I've been able to test the server locally through my terminal environment.
+Currently a resource that might just needed is a server to host the program to run at all times. The line of code must be running at all times in order for the bot to work. Otherwise I've been able to test the server locally through my terminal environment.-->
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+### Built With
+
+This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
+
+* <a href="https://www.python.org"><img src="README Assets/python-logo.png" width="120" height="40" alt="Python"></a>
+* <a href="https://docs.aiohttp.org/en/stable"><img src="README Assets/aiohttp-logo.png" width="120" height="40" alt="Aiohttp"></a>
+* <a href="https://api.septa.org"><img src="README Assets/septa-logo.jpeg" width="120" height="40" alt="Septa"></a>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- GETTING STARTED -->
+## Getting Started
+
+This is an example of how you may give instructions on setting up your project locally.
+To get a local copy up and running follow these simple example steps.
+
+### Prerequisites
+
+This is an example of how to list things you need to use the software and how to install them.
+* npm
+  ```sh
+  npm install npm@latest -g
+  ```
+
+### Installation
+
+_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+
+1. Get a free API Key at [https://example.com](https://example.com)
+2. Clone the repo
+   ```sh
+   git clone https://github.com/Prismfade/Discord-SEPTA-Bot.git
+   ```
+3. Install NPM packages
+   ```sh
+   npm install
+   ```
+4. Enter your API in `config.js`
+   ```js
+   const API_KEY = 'xxx';
+   ```
+5. Change git remote url to avoid accidental pushes to base project
+   ```sh
+   git remote set-url origin github_username/repo_name
+   git remote -v # confirm the changes
+   ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- USAGE EXAMPLES -->
+## Usage
+
+Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+
+_For more examples, please refer to the [Documentation](https://example.com)_
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- LICENSE -->
+## License
+
+Distributed under the Unlicense License. See `LICENSE.txt` for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- CONTACT -->
+## Contact
+
+Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
+
+Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
+
+Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
+
+* <a href="https://github.com/othneildrew/Best-README-Template"><img src=" " width="120" height="30" alt="Best README Template"></a>
+* <a href="https://www.isseptafucked.com"><img src=" " width="120" height="30" alt="Is SEPTA Fucked"></a>
+* <a href="https://www3.septa.org"><img src=" " width="120" height="30" alt="SEPTA"></a>
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
