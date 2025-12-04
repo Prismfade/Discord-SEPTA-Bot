@@ -1,27 +1,2 @@
-[2025-12-03 22:40:37] [INFO    ] discord.client: logging in using static token
-[2025-12-03 22:40:38] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: d792cd399a3e2ad9d56446d1203fad30).
-[2025-12-03 22:41:40] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'sync'
-Traceback (most recent call last):
-  File "C:\Users\zhiga\PycharmProjects\Discord-SEPTA-Bot\.venv\Lib\site-packages\discord\app_commands\commands.py", line 859, in _do_call
-    return await self._callback(interaction, **params)  # type: ignore
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\zhiga\PycharmProjects\Discord-SEPTA-Bot\main.py", line 264, in sync_slash
-    await interaction.response.send_message(box("Global commands synced!"))
-  File "C:\Users\zhiga\PycharmProjects\Discord-SEPTA-Bot\.venv\Lib\site-packages\discord\interactions.py", line 1051, in send_message
-    response = await adapter.create_interaction_response(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\zhiga\PycharmProjects\Discord-SEPTA-Bot\.venv\Lib\site-packages\discord\webhook\async_.py", line 224, in request
-    raise NotFound(response, data)
-discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Users\zhiga\PycharmProjects\Discord-SEPTA-Bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1297, in _call
-    await command._invoke_with_namespace(interaction, namespace)
-  File "C:\Users\zhiga\PycharmProjects\Discord-SEPTA-Bot\.venv\Lib\site-packages\discord\app_commands\commands.py", line 884, in _invoke_with_namespace
-    return await self._do_call(interaction, transformed_values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\zhiga\PycharmProjects\Discord-SEPTA-Bot\.venv\Lib\site-packages\discord\app_commands\commands.py", line 877, in _do_call
-    raise CommandInvokeError(self, e) from e
-discord.app_commands.errors.CommandInvokeError: Command 'sync' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction
+[2025-12-04 01:12:34] [INFO    ] discord.client: logging in using static token
+[2025-12-04 01:12:35] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: cb4bb13e781920b2660973b2ec1ae183).

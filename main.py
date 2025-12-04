@@ -27,6 +27,7 @@ from Septa_Api import (
     get_next_train,
     get_station_arrivals,
 )
+from menu_commands import CommandMenuView
 
 from station_alerts import StationAlerts  # alert/background cog
 
@@ -263,6 +264,14 @@ async def sync_slash(interaction: discord.Interaction):
     await bot.tree.sync()
     await interaction.response.send_message(box("Global commands synced!"))
 
+@bot.tree.command(name="menu", description="Open the main command menu.")
+async def menu_slash(interaction: discord.Interaction):
+    view = CommandMenuView(interaction.user.id)
+    await interaction.response.send_message(
+        "Select a command:",
+        view=view,
+        ephemeral=True
+    )
 
 # ---------- Slash subscription commands (simple text) ---------- #
 
