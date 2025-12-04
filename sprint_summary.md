@@ -7,8 +7,6 @@ This section summarizes the work completed on the **SEPTA Discord Status Bot** a
 ## Sprint 1: Week of Oct 20 – Oct 26
 
 - **Total issues:** 2  
-- **Ownership by teammate:**
-  - **Chris Breeden — 2 issues**
 - **Key completed work:**
   - **KAN-1:** Initial project proposal + bot architecture outline  
   - **KAN-4:** Setup of Jira board, workflow statuses, and team processes
