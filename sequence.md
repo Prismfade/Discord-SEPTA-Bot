@@ -9,7 +9,7 @@ sequenceDiagram
     participant SubSys as Subscription System
 
     %% User triggers a slash command
-    User->>Discord: /next train
+    User->>Discord: /next_train
     Discord->>Bot: Slash Command Event
 
     Bot->>Bot: Parse stations\n(normalize_station)
@@ -18,7 +18,7 @@ sequenceDiagram
     Bot-->>Discord: "Next train arrives in X minutes"
 
     %% User checks line status
-    User->>Discord: /check line status
+    User->>Discord: /check_line_status
     Discord->>Bot: Message event
 
     Bot->>User: "Which line?"
