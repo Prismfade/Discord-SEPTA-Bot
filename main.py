@@ -147,30 +147,17 @@ async def station(interaction: discord.Interaction, name: str):
 @bot.tree.command(
     name="check_line_status", description="Lets you check any specific train line."
 )
-@app_commands.describe(name="Type a Regional Rail line")
+@app_commands.describe(name=  "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
 async def check_line_status_slash(interaction: discord.Interaction, name: str):
-    await interaction.response.send_message(box(
-        "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)"
-    ))
 
-    def check(m: discord.Message):
-        return (
-            m.author.id == interaction.user.id
-            and m.channel.id == interaction.channel.id
-        )
+   correct = normalize_station(name)
 
-    try:
-        user_msg = await bot.wait_for("message", check=check, timeout=20)
-        line_name = user_msg.content.strip()
-        await interaction.followup.send(f"Fetching **{line_name.title()} Line** status…")
+   await interaction.response.send_message(
+       box(f"Fetching **{correct} Line** status…")
+   )
 
-        status_message = await get_line_status(line_name)
-        await interaction.followup.send(box(status_message))
-    except Exception:
-        await interaction.followup.send(box(
-            "⏰ You didn’t reply in time or an error occurred. Try again."
-        ))
-
+   stat_message  = await get_line_status(correct)
+   await interaction.followup.send(box(stat_message))
 
 @bot.tree.command(
     name="next_train", description="Shows the next train between two stations."
