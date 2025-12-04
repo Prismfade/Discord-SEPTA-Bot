@@ -31,7 +31,7 @@ No need to install the SEPTA app because everything happens inside Discord.
 
 ---
 
-## 🎯 High-Level Requirements
+##  High-Level Requirements
 
 - Notify users when a subscribed train line is delayed  
 - Allow users to query line-specific or station-specific information  
@@ -53,7 +53,7 @@ No need to install the SEPTA app because everything happens inside Discord.
 
 ---
 
-## 🧠 Background
+##  Background
 
 SEPTA has faced reliability issues across several Regional Rail lines, but it exposes public APIs that allow developers to access real-time system data.
 
@@ -61,7 +61,7 @@ Discord is widely used among Philadelphia-area communities, making it an ideal p
 
 ---
 
-## 🛠 Conceptual Design
+##  Conceptual Design
 
 Example of how the bot would behave at its simplest form:  
 https://imgur.com/a/7Zc6mB1
@@ -125,7 +125,7 @@ Discord-SEPTA-Bot/
 
 ---
 
-## 🔔 Subscription Features
+##  Subscription Features
 
 Users can subscribe to outage alerts for any Regional Rail line.  
 The bot automatically sends updates when:
@@ -153,7 +153,7 @@ These mirror the slash-based subscription features but are kept for backward com
 
 ---
 
-## 📡 APIs Used
+##  APIs Used
 
 The bot interacts with SEPTA’s public endpoints, including but not limited to:
 
