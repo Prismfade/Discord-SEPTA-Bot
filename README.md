@@ -1,34 +1,190 @@
-## Keywords d
+# 🚆 SEPTA Discord Status Bot
 
+A Discord bot that provides real-time SEPTA Regional Rail updates, next-arrival predictions, line status queries, station lookups, and outage alert subscriptions — all directly inside Discord.
+
+Built using:
+
+- Python    
+- SEPTA APIs  
+- Async I/O 
+
+---
+
+## 🔑 Keywords
 
 #Discord #Bot #Transportation #Philadelphia #Python #SEPTA API
 
-## Project Abstract
+---
 
-With the modern landscape of SEPTA (South Eastern Pennsylvania Transportation Authority), there has been a lot of certainties about the reliability of the service. This Discord bot service would allow updates to SEPTA transportation systems allowing users to be notified if their services are late. This project is inspired by the humor centric (but also resourceful website) https://www.isseptafucked.com/ For an example, this bot can be implemented to any Discord server, especially local centered ones. All it takes is a user to type in a command such as "!Lansdale line status" to receive information on if there is a delay on that line. The goal is to provide commuters a tool they can use on a familiar platform such as Discord, access to information about SEPTA without having to install the SEPTA application. Providing features such as late times, ways to subscribe to notifications, and even prospect routes based on user inputs.
+## 📘 Project Abstract
 
-## High Level Requirement
+SEPTA (South Eastern Pennsylvania Transportation Authority) experiences frequent delays and inconsistencies that can frustrate commuters. This project provides a Discord bot that delivers real-time status updates for trains and stations, inspired by the informational (and humor-based) site **https://www.isseptafucked.com/**.
 
-- Notify users if a subscribed form of transportation is late
-- Allow users to find nearest regional rail route to get to destiation
-- Provide estimated notifications for both subway lines and trolley
+Users can interact with the bot using **slash commands** to get:
 
-## Conceptual Design
+- Live line delays  
+- Next arrival times  
+- Station-specific schedules  
+- Notifications when a subscribed line experiences an outage  
 
-This is a screenshot of how the bot would behave at its simplest form: https://imgur.com/a/7Zc6mB1
+No need to install the SEPTA app because everything happens inside Discord.
 
-## Proof of Concept
+---
 
-Like mentioned in the abstract, https://www.isseptafucked.com/ was an inspiration for this project proposal. According to their documentation, they use SEPTAs API to receive all of the data required to track late times of trains. On their FAQ, they mentioned that with using node.js, they were able to asynchronously sync "data from SEPTA's API in the same process, without having to use crontabs. Or a even database for that matter."
+## 🎯 High-Level Requirements
 
-Currently using Discord Bot API through Discord development portal. Will need to find a way to implement SEPTA API https://www3.septa.org/.
+- Notify users when a subscribed train line is delayed  
+- Allow users to query line-specific or station-specific information  
+- Provide next-arrival predictions between two stations  
+- Enable subscription to outage alerts  
+- Display train line and station mappings for user convenience  
 
-Current GitHub repository: https://github.com/Prismfade/Discord-SEPTA-Bot Without the secret discord bot token that I only have locally stored on my machine, the program will not run. The basic idea is that through a URL link, you can invite the Discord bot to your personal server. While the program/code is running on an environment along with the discord bot token, users will be able to type syntax commands within a chat to get information such as regional rail statuses.
+---
 
-## Background
+## ⭐ Features
 
-To preface the reasoning behind the project, SEPTA has been going through many problems within the last few months that are very prominent. It is hard to find delays on certain SEPTA lines, but there is API available from SEPTA that users can use that keeps track of schedules and delays of SEPTA trains. The goal is to provide transparency to users of SEPTA, by giving them a way to check up on the status of their commute. Due to Discord being a primary platform of communications that people use, it would provide convenience to the hands of many users due to the ease of use of Discord bots.
+- View real-time delays for any SEPTA Regional Rail line  
+- Get the next train between any two Regional Rail stations  
+- Look up station-specific arrival times  
+- Display which lines serve a given station  
+- Subscribe and unsubscribe to outage alerts for specific lines  
+- Use dropdown menus for line selection to reduce typing errors  
+- Handle invalid input gracefully with clear, user-friendly messages  
 
-## Required Resources
+---
 
-Currently a resource that might just needed is a server to host the program to run at all times. The line of code must be running at all times in order for the bot to work. Otherwise I've been able to test the server locally through my terminal environment.
+## 🧠 Background
+
+SEPTA has faced reliability issues across several Regional Rail lines, but it exposes public APIs that allow developers to access real-time system data.
+
+Discord is widely used among Philadelphia-area communities, making it an ideal platform to deliver transit information conveniently. This bot bridges SEPTA’s data with Discord’s interface to give commuters instant updates without opening another app or browser.
+
+---
+
+## 🛠 Conceptual Design
+
+Example of how the bot would behave at its simplest form:  
+https://imgur.com/a/7Zc6mB1
+
+---
+
+## 📁 Project Structure
+
+```text
+Discord-SEPTA-Bot/
+├── main.py             # Entry point for the bot and Discord commands
+├── Septa_Api.py        # Functions for calling SEPTA public APIs
+├── Stations.py         # Station and line normalization / mappings
+├── Select_menu.py      # Dropdown / select menu views for subscriptions
+├── station_alerts.py   # Background task for alert notifications
+├── requirements.txt    # Python dependencies
+├── discord.log         # Runtime logs (created at runtime)
+└── README.md           # Project documentation
+```
+---
+## 📦 Installation & Setup
+
+### 1. Clone the repository
+
+    git clone https://github.com/Prismfade/Discord-SEPTA-Bot.git
+    cd Discord-SEPTA-Bot
+
+### 2. Create a virtual environment
+
+    python3 -m venv venv
+    source venv/bin/activate
+
+### 3. Install dependencies
+
+    pip install -r requirements.txt
+
+### 4. Create a `.env` file in the project root
+
+    DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
+
+
+### 5. Run the bot
+
+    python3 main.py
+
+---
+
+## 🔧 Slash Commands
+
+| Command                 | Description                                              |
+|-------------------------|----------------------------------------------------------|
+| `/help`                 | Shows all bot commands                                   |
+| `/regional_rail_status` | Live delays for all Regional Rail trains                 |
+| `/check_line_status`    | Check the status of a specific train line                |
+| `/next_train`           | Shows the next train between two stations                |
+| `/station`              | Station arrival times                                    |
+| `/lines`                | Displays which lines serve a station                     |
+| `/subscribemenu`        | Subscribe to outage alerts (dropdown menu)               |
+| `/unsubscribemenu`      | Unsubscribe from outage alerts                           |
+| `/my_subscriptions`     | Show which lines you are subscribed to                   |
+
+---
+
+## 🔔 Subscription Features
+
+Users can subscribe to outage alerts for any Regional Rail line.  
+The bot automatically sends updates when:
+
+- A line becomes delayed  
+- A route is suspended  
+- Major disruptions occur  
+
+Prefix-style subscription commands:
+
+- `!subscribe <line>`  
+- `!unsubscribe <line>`  
+- `!mysubscriptions`  
+
+These mirror the slash-based subscription features but are kept for backward compatibility.
+
+---
+
+## 🗂 Required Resources
+
+- A **Discord Bot Token** from the [Discord Developer Portal](https://discord.com/developers/applications)  
+- A server (local or cloud) to run the bot continuously  
+- Python 3.10+  
+- Internet access to call SEPTA APIs  
+
+---
+
+## 📡 APIs Used
+
+The bot interacts with SEPTA’s public endpoints, including but not limited to:
+
+- **Regional Rail Status API** – Live train delays  
+- **Next Train / Schedules API** – Upcoming trips between two stations  
+- **Station Arrivals API** – Upcoming trains at a specific station  
+- **Alerts API** – Service alerts and route suspensions  
+
+These APIs power the real-time information shown in Discord.
+
+---
+
+## 👥 Team Members
+
+- Jerry Lin  
+- Christine Kapp  
+- Justin Pham 
+- Fares Hagos
+- Chris Breeden 
+
+---
+
+## 📄 Notes
+
+- The bot will **not run** without a valid Discord token in a `.env` file.  
+- All sensitive data (tokens, keys, credentials) should **never** be committed to GitHub.  
+- Logs are written to `discord.log` for debugging and monitoring.
+
+---
+
+## 🧾 License
+
+This project is for educational purposes as part of a software engineering course.  
+Future work may adapt it for broader or production use.
