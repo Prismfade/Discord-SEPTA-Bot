@@ -19,7 +19,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Prismfade/Discord-SEPTA-Bot">
-    <img src="/Users/christnekapp/Desktop/Discord-SEPTA-Bot/README Assets/logo.png" alt="Logo" width="200" height="200">
+    <img src="README Assets/logo.png" alt="Logo" width="200" height="200">
   </a>
 
   <h3 align="center">SEPTA Discord Bot</h3>
