@@ -215,7 +215,33 @@ async def next_train_slash(
 @bot.tree.command(
     name="lines", description="Shows what lines serve a Regional Rail station."
 )
-async def lines_slash(interaction: discord.Interaction):
+async def lines_slash(interaction: discord.Interaction,station : str | None = None):
+
+
+    if station is not None:
+        #user is able to type like uh /lines station : "Temple" it don't require prompting agian
+        await interaction.response.defer()
+        station_raw = station.strip()
+        station_norm = normalize_station(station_raw)
+
+        from Septa_Api import build_station_line_map
+        station_map = await build_station_line_map()
+        lines_for_station = station_map.get(station_norm)
+
+
+        if not lines_for_station:
+            await interaction.followup.send(box(
+                f"⚠️ I couldn't find any lines serving **{station_raw}**.\n"
+                "Please check the spelling, or try `/station` to look up arrivals."
+            ))
+            return
+
+        lines_list = ", ".join(sorted(lines_for_station))
+        await interaction.followup.send(box(
+            f"🚆 **{station_norm}** is served by these lines:\n{lines_list}"
+        ))
+        return
+
     await interaction.response.send_message(box(
         "Which station do you want to check? (e.g. Temple University, Suburban Station)"
     ))
