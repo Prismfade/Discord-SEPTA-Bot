@@ -6,9 +6,9 @@ This section summarizes the work completed on the **SEPTA Discord Status Bot** a
 
 ## Sprint 1: Week of Oct 20 – Oct 26
 
-- **Total issues:** 2  (Done: 2)
+- **Total issues:** 2  
 - **Ownership by teammate:**
-  - **Chris Breeden — 2 issues (2 done)**
+  - **Chris Breeden — 2 issues**
 - **Key completed work:**
   - **KAN-1:** Initial project proposal + bot architecture outline  
   - **KAN-4:** Setup of Jira board, workflow statuses, and team processes
@@ -49,13 +49,13 @@ This section summarizes the work completed on the **SEPTA Discord Status Bot** a
 
 - **Total issues:** 12  (Done: 7, In Progress: 5)
 - **Ownership by teammate:**
-  - **Justin Pham — 6 issues (3 done)**
-  - **Jerry Lin — 3 issues (3 done)**
-  - **Fares Hagos — 2 issues (0 done yet)**
-  - **Christine Kapp — 1 issue (1 done)**
-  - **Chris Breeden — 1 issue (1 done)**  
-- **Key completed work (including Chris’s):**
-  - **KAN-13 — Alerts for when a station is down** *(Chris)*  
+  - **Justin Pham — 6 issues 
+  - **Jerry Lin — 3 issues 
+  - **Fares Hagos — 2 issues 
+  - **Christine Kapp — 1 issue 
+  - **Chris Breeden — 1 issue 
+- **Key completed work:**
+  - **KAN-13 — Alerts for when a station is down** 
   - Delay/status messaging improvements  
   - Per-line station sorting for dropdown menus  
   - Station list builder for Lansdale Line  
@@ -96,5 +96,3 @@ This section summarizes the work completed on the **SEPTA Discord Status Bot** a
 - Documentation, architecture creation, overall polishing
 
 ---
-
-This summary reflects the Jira CSV you provided and accurately represents each teammate’s contributions.
