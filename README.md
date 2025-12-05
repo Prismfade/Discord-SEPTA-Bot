@@ -133,8 +133,6 @@ Currently a resource that might just needed is a server to host the program to r
 
 ### 🔨 Built With
 
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-
 * <a href="https://www.python.org"><img src="README Assets/python-logo.png" width="120" height="40" alt="Python"></a>
 * <a href="https://docs.aiohttp.org/en/stable"><img src="README Assets/aiohttp-logo.png" width="120" height="40" alt="Aiohttp"></a>
 * <a href="https://api.septa.org"><img src="README Assets/septa-logo.jpeg" width="120" height="40" alt="Septa"></a>
@@ -208,9 +206,9 @@ Distributed under the Unlicense License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
+Your Name - email@example.com
 
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
+Project Link: https://github.com/Prismfade/Discord-SEPTA-Bot
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -219,11 +217,9 @@ Project Link: [https://github.com/your_username/repo_name](https://github.com/yo
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* <a href="https://github.com/othneildrew/Best-README-Template"><img src=" " width="120" height="30" alt="Best README Template"></a>
-* <a href="https://www.isseptafucked.com"><img src=" " width="120" height="30" alt="Is SEPTA Fucked"></a>
-* <a href="https://www3.septa.org"><img src=" " width="120" height="30" alt="SEPTA"></a>
+* <a href="https://github.com/othneildrew/Best-README-Template"><img src="README Assets/best-readme-template.png" width="120" height="40" alt="Best README Template"></a>
+* <a href="https://www.isseptafucked.com"><img src="README Assets/is-septa-fucked-logo.png" width="120" height="40" alt="Is SEPTA Fucked"></a>
+* <a href="https://www3.septa.org"><img src="README Assets/septa-logo.jpeg" width="120" height="40" alt="SEPTA"></a>
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
