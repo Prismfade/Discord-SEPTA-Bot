@@ -30,12 +30,16 @@ async def get_regional_rail_status():
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
+                    if int(delay) >= 500:
+                        emoji = "❌"
+                        status = "Canceled"
+                    else:
+                        # Choose emoji based on delay
+                        emoji = "🟢" if delay == 0 else "🛑"
+                        status = "on time" if delay == 0 else f"{delay} min late"
 
-                    # Choose emoji based on delay
-                    emoji = "🟢" if delay == 0 else "🛑"
-                    status = "on time" if delay == 0 else f"{delay} min late"
 
-                    # Format with emoji FIRST
+                        # Format with emoji FIRST
                     trains.append(f"{emoji} 🚆 {line} Train {train_id}: {status}")
 
                 return "\n".join(trains)
@@ -71,8 +75,21 @@ async def get_line_status(line_name):
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
-                    if delay > 0:
-                        delayed.append(f"🚆 {line} Train {train_id}: {delay} min late")
+
+                    if delay == 0:
+                        status = "On time ✅"
+                    elif delay <= 5:
+                        status = f"{delay} min late ⚠️"
+                    else:
+                        being_cancel = "Canceled 😡"
+                        if delay >= 999:
+                            status = f"{being_cancel}"
+                        else:
+                            status = f"{delay} min late ⛔"
+
+
+                    delayed.append(f"🚆🛑 {line} Train {train_id} :{status}" )
+
 
                 if not delayed:
                     # return f"All {line_name.title()} Line trains are on time ✅"
@@ -198,6 +215,26 @@ async def get_station_arrivals(station_name):
 
     # Convert whatever the user typed into a proper station name
     station = normalize_station(station_name)
+
+    unsupported_station ={
+        "norristown",
+        "norristown tc",
+        "norristown transportation center",
+        "norristown transit center",
+        "ntc",
+    }
+
+    if station.lower() in unsupported_station:
+
+        return (
+            "⚠️ **Norristown does not provide live arrival data in SEPTA’s API.**\n"
+            "SEPTA does not publish arrivals for this stop.\n\n"
+            "Nearby stations with live arrival data:\n"
+            "• **Manayunk**\n"
+            "• **Miquon**\n"
+            "• **Conshohocken**"
+        )
+
     url = "https://www3.septa.org/api/TrainView/index.php"
     url2 = f"https://www3.septa.org/api/Arrivals/index.php?station={station}"
     arrivals = []
@@ -280,14 +317,19 @@ async def get_station_arrivals(station_name):
                 sched_depart_str = depart_dt.strftime("%I:%M %p").lstrip("0")
             else:
                 sched_depart_str = "N/A"
+
             #compute ETA
             if sched_arrival_dt:
                 now = datetime.now()
                 eta_delta = sched_arrival_dt -now
                 eta_minutes = max(int(eta_delta.total_seconds() // 60), 0)
             else:
-                eta_minutes = "N/A"  
-            
+                eta_minutes = 999
+
+            if eta_minutes >= 500:
+                eta_display = "❌ Canceled"
+            else:
+                eta_display = f"{eta_minutes} min"
 
             # Calculate the actual arrival time (right now + due minutes)
             # try:
@@ -319,7 +361,7 @@ async def get_station_arrivals(station_name):
                 f"Scheduled arrival: **{sched_arrival_str}**\n"
                 f"Scheduled departure: **{sched_depart_str}**\n"
                 f"Track: **{track}**\n"
-                f"ETA: Arriving in **{eta_minutes} min** (at **{sched_arrival_str}**)\n"
+                f"ETA: Arriving in **{eta_display}**(at **{sched_arrival_str}**)\n"
                 f"Status: {official_status}\n"
 
             )
