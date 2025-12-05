@@ -8,6 +8,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
+from datetime import datetime
+
 
 from Select_menu import (
     LineView,
@@ -119,7 +121,22 @@ async def on_ready():
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, station information, and send outage alerts.\n"
             "Type **/help** to see what I can do!\n"
+            "Type **/menu** to see all my commands!!"
         )
+
+        hour = datetime.now().hour
+
+        if 5 <= hour < 12:
+            greeting = "Good Morning!"
+            file = discord.File("Good_morning.png")
+        elif 12 <= hour < 18:
+            greeting = "Good Afternoon!"
+            file = discord.File("good_afternoon.png")
+        else:
+            greeting = "Good Night!"
+            file = discord.File("good_night.png")
+
+        await channel.send(greeting, file=file)
 
 
 # ---------------------------
