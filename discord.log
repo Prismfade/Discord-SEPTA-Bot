@@ -1,2 +1,32 @@
-[2025-12-05 00:04:45] [INFO    ] discord.client: logging in using static token
-[2025-12-05 00:04:45] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: eed63dc59580d800f51c0722a186acca).
+[2025-12-05 09:50:27] [INFO    ] discord.client: logging in using static token
+[2025-12-05 09:50:29] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: f158e9232c2aa94adbf5e207435d454f).
+[2025-12-05 09:51:47] [ERROR   ] discord.app_commands.tree: Ignoring exception in command 'check_line_status'
+Traceback (most recent call last):
+  File "/Users/jerrylin/PycharmProjects/Discord-SEPTA-Bot/.venv/lib/python3.13/site-packages/discord/app_commands/commands.py", line 859, in _do_call
+    return await self._callback(interaction, **params)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jerrylin/PycharmProjects/Discord-SEPTA-Bot/main.py", line 203, in check_line_status_slash
+    await interaction.response.send_message(
+        box(f"Fetching **{correct} Line** status…")
+    )
+  File "/Users/jerrylin/PycharmProjects/Discord-SEPTA-Bot/.venv/lib/python3.13/site-packages/discord/interactions.py", line 1051, in send_message
+    response = await adapter.create_interaction_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/Users/jerrylin/PycharmProjects/Discord-SEPTA-Bot/.venv/lib/python3.13/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/jerrylin/PycharmProjects/Discord-SEPTA-Bot/.venv/lib/python3.13/site-packages/discord/app_commands/tree.py", line 1297, in _call
+    await command._invoke_with_namespace(interaction, namespace)
+  File "/Users/jerrylin/PycharmProjects/Discord-SEPTA-Bot/.venv/lib/python3.13/site-packages/discord/app_commands/commands.py", line 884, in _invoke_with_namespace
+    return await self._do_call(interaction, transformed_values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jerrylin/PycharmProjects/Discord-SEPTA-Bot/.venv/lib/python3.13/site-packages/discord/app_commands/commands.py", line 877, in _do_call
+    raise CommandInvokeError(self, e) from e
+discord.app_commands.errors.CommandInvokeError: Command 'check_line_status' raised an exception: NotFound: 404 Not Found (error code: 10062): Unknown interaction

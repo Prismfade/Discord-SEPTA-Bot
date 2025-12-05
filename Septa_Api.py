@@ -75,8 +75,21 @@ async def get_line_status(line_name):
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
-                    if delay > 0:
-                        delayed.append(f"🚆🛑 {line} Train {train_id} : {delay} min late")
+
+                    if delay == 0:
+                        status = "On time ✅"
+                    elif delay <= 5:
+                        status = f"{delay} min late ⚠️"
+                    else:
+                        being_cancel = "Canceled 😡"
+                        if delay >= 999:
+                            status = f"{being_cancel}"
+                        else:
+                            status = f"{delay} min late ⛔"
+
+
+                    delayed.append(f"🚆🛑 {line} Train {train_id} :{status}" )
+
 
                 if not delayed:
                     # return f"All {line_name.title()} Line trains are on time ✅"
