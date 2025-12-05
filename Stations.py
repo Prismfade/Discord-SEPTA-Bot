@@ -298,3 +298,85 @@ def suggest_station(user_input):
 
     # Otherwise return the best fuzzy match
     return matches[0]
+
+REGIONAL_RAIL_LINES = [
+    "Lansdale/Doylestown",
+    "Paoli/Thorndale",
+    "Warminster",
+    "West Trenton",
+    "Airport",
+    "Media/Wawa",
+    "Fox Chase",
+    "Chestnut Hill East",
+    "Chestnut Hill West",
+    "Cynwyd",
+    "Manayunk/Norristown",
+    "Trenton",
+    "Wilmington/Newark",
+]
+
+def normalize_line(name: str) -> str:
+    key = name.lower().strip()
+
+    #landsdale / doles
+    if key.startswith(("lans", "lansd", "lansda", "doyl", "doyle", "doyles", "doylest")):
+        return "Lansdale/Doylestown"
+
+    #paoli/Thorndale
+    if key.startswith(("pao", "paol", "paoli", "thor", "thornd", "thorns")):
+        return "Paoli/Thorndale"
+
+    #Warminster
+    if key.startswith(("war", "warm", "warmin")):
+        return "Warminster"
+
+    #West Trenton
+    if key.startswith(("west", "wtre", "w trent", "trent")):
+        return "West Trenton"
+
+    #Wilmington/Newark
+    if key.startswith(("wilm", "newa", "newar")):
+        return "Wilmington/Newark"
+
+    #Manayunk/Norristown
+    if key.startswith(("mana", "manay", "norr", "norri", "norrist", "norristown")):
+        return "Manayunk/Norristown"
+
+    #Media/Wawa
+    if key.startswith(("media", "wawa")):
+        return "Media/Wawa"
+
+    #airport
+    if key.startswith(("air", "airport")):
+        return "Airport"
+
+    #fox chase
+    if key.startswith("fox"):
+        return "Fox Chase"
+
+    #chestnut hill East / West
+    if key.startswith(("chestnut hill e", "che hill e")):
+        return "Chestnut Hill East"
+    if key.startswith(("chestnut hill w", "che hill w")):
+        return "Chestnut Hill West"
+
+    #Cynwyd
+    if key.startswith(("cyn", "cynw")):
+        return "Cynwyd"
+
+
+    # exact match first
+    for line in REGIONAL_RAIL_LINES:
+        if key == line.lower():
+            return line
+
+    match = difflib.get_close_matches(
+        key,
+        [l.lower() for l in REGIONAL_RAIL_LINES],
+        n=1,
+        cutoff=0.7
+    )
+    if match:
+        return next(l for l in REGIONAL_RAIL_LINES if l.lower() == match[0])
+
+    return name.title()

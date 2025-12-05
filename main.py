@@ -3,11 +3,13 @@ import random
 import asyncio
 import logging
 from typing import List
-
+from line_status import LineStatusMonitor
 import discord
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
+from datetime import datetime
+
 
 from Select_menu import (
     LineView,
@@ -19,7 +21,7 @@ from Line_Subscription import (
     unsubscribe_to_line,
     get_user_subscriptions,
 )
-from Stations import normalize_station, REGIONAL_RAIL_STATIONS
+from Stations import normalize_station, REGIONAL_RAIL_STATIONS, normalize_line, REGIONAL_RAIL_LINES
 
 from Septa_Api import (
     get_regional_rail_status,
@@ -27,6 +29,7 @@ from Septa_Api import (
     get_next_train,
     get_station_arrivals,
 )
+from menu_commands import CommandMenuView
 
 from station_alerts import StationAlerts  # alert/background cog
 
@@ -92,6 +95,8 @@ class MyBot(commands.Bot):
     async def setup_hook(self):
         # Load the StationAlerts cog so background alerts start running
         await self.add_cog(StationAlerts(self))
+        await self.add_cog(LineStatusMonitor(self))
+
 
 
 bot = MyBot()
@@ -116,7 +121,22 @@ async def on_ready():
             "**👋 Hey! I'm the SEPTA Status Bot.**\n"
             "I can check train delays, next arrivals, station information, and send outage alerts.\n"
             "Type **/help** to see what I can do!\n"
+            "Type **/menu** to see all my commands!!"
         )
+
+        hour = datetime.now().hour
+
+        if 5 <= hour < 12:
+            greeting = "Good Morning!"
+            file = discord.File("Good_morning.png")
+        elif 12 <= hour < 18:
+            greeting = "Good Afternoon!"
+            file = discord.File("good_afternoon.png")
+        else:
+            greeting = "Good Night!"
+            file = discord.File("good_night.png")
+
+        await channel.send(greeting, file=file)
 
 
 # ---------------------------
@@ -149,8 +169,36 @@ async def station(interaction: discord.Interaction, name: str):
 )
 @app_commands.describe(name=  "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
 async def check_line_status_slash(interaction: discord.Interaction, name: str):
+   #Bug: enter anyhting line even if its a staiton it will check it and try to fetch the data
 
-   correct = normalize_station(name)
+   raw = name.strip()
+   #Normalize for checking
+   line_norm = normalize_line(raw)
+   is_real_station = raw.lower() in (s.lower() for s in REGIONAL_RAIL_STATIONS)
+   is_real_line = line_norm in REGIONAL_RAIL_LINES
+
+
+   if is_real_station and not is_real_line:
+       await interaction.response.send_message(
+           f"⚠️ `{raw}` looks like a **station**, not a train line.\n"
+           "Try again with a line name instead (e.g. *Warminster, Fox Chase, Paoli/Thorndale*).",
+           ephemeral=True
+       )
+       return
+
+   # or its just soemthing random
+   if line_norm not in REGIONAL_RAIL_LINES:
+       await interaction.response.send_message(
+           f"⚠️ `{raw}` is **not a valid Regional Rail line**.\n"
+           "Try checking a real line like:\n"
+           "-Lansdale/Doylestown\n"
+           "-Paoli/Thorndale\n"
+           "-Trenton\n"
+           "-Fox Chase",
+           ephemeral=True
+       )
+       return
+   correct = line_norm
 
    await interaction.response.send_message(
        box(f"Fetching **{correct} Line** status…")
@@ -214,7 +262,33 @@ async def next_train_slash(
 @bot.tree.command(
     name="lines", description="Shows what lines serve a Regional Rail station."
 )
-async def lines_slash(interaction: discord.Interaction):
+async def lines_slash(interaction: discord.Interaction,station : str | None = None):
+
+
+    if station is not None:
+        #user is able to type like uh /lines station : "Temple" it don't require prompting agian
+        await interaction.response.defer()
+        station_raw = station.strip()
+        station_norm = normalize_station(station_raw)
+
+        from Septa_Api import build_station_line_map
+        station_map = await build_station_line_map()
+        lines_for_station = station_map.get(station_norm)
+
+
+        if not lines_for_station:
+            await interaction.followup.send(box(
+                f"⚠️ I couldn't find any lines serving **{station_raw}**.\n"
+                "Please check the spelling, or try `/station` to look up arrivals."
+            ))
+            return
+
+        lines_list = ", ".join(sorted(lines_for_station))
+        await interaction.followup.send(box(
+            f"🚆 **{station_norm}** is served by these lines:\n{lines_list}"
+        ))
+        return
+
     await interaction.response.send_message(box(
         "Which station do you want to check? (e.g. Temple University, Suburban Station)"
     ))
@@ -263,6 +337,14 @@ async def sync_slash(interaction: discord.Interaction):
     await bot.tree.sync()
     await interaction.response.send_message(box("Global commands synced!"))
 
+@bot.tree.command(name="menu", description="Open the main command menu.")
+async def menu_slash(interaction: discord.Interaction):
+    view = CommandMenuView(interaction.user.id)
+    await interaction.response.send_message(
+        "Select a command:",
+        view=view,
+        ephemeral=True
+    )
 
 # ---------- Slash subscription commands (simple text) ---------- #
 
@@ -271,11 +353,41 @@ async def sync_slash(interaction: discord.Interaction):
     description="Subscribe to outage alerts for a Regional Rail line.",
 )
 @app_commands.describe(line_name="Name of the Regional Rail line (e.g. Lansdale/Doylestown)")
+
 async def subscribe_line_slash(interaction: discord.Interaction, line_name: str):
+
+    user= interaction.user.display_name
+    line_norm = normalize_line(line_name)
     user_id = interaction.user.id
-    await subscribe_to_line(user_id, line_name)
+    #new bug : user can subscribe into any thing even if its not a line
+    #just need to reject invalid line name
+
+    if line_norm not in REGIONAL_RAIL_LINES:
+        await interaction.response.send_message(
+            f"⚠️ **{user}**, `{line_name}` is not a valid Regional Rail line.\n"
+            "Please try again with a real line name.\n\n"
+            "Examples:\n"
+            "• Lansdale/Doylestown\n"
+            "• Paoli/Thorndale\n"
+            "• Warminster\n"
+            "• Media/Wawa",
+            ephemeral=True,
+        )
+        return
+
+    #bug , user can keep subscribing to the same line over and over though they're already subscribed
+
+    current = await get_user_subscriptions(user_id)
+    if current and line_norm in current:
+        await interaction.response.send_message(
+            f"⚠️ **{user}**, you are already subscribed to **{line_norm}**.\n"
+            "Use **/my_subscriptions** to view all your subscriptions.",
+            ephemeral=True,
+        )
+        return
+    await subscribe_to_line(user_id, line_norm)
     await interaction.response.send_message(
-        f"✅ You are now subscribed to alerts for **{line_name}**.",
+        f"✅ **{user}**,You are now subscribed to alerts for **{line_norm}**.",
         ephemeral=True,
     )
 
@@ -287,9 +399,26 @@ async def subscribe_line_slash(interaction: discord.Interaction, line_name: str)
 @app_commands.describe(line_name="Name of the Regional Rail line to unsubscribe.")
 async def unsubscribe_line_slash(interaction: discord.Interaction, line_name: str):
     user_id = interaction.user.id
-    await unsubscribe_to_line(user_id, line_name)
+    line_norm = normalize_line(line_name)
+    user = interaction.user.display_name
+    current = await get_user_subscriptions(user_id)
+    if line_norm not in REGIONAL_RAIL_LINES:
+        await interaction.response.send_message(
+            f"⚠️ {user}, `{line_name}` is not a valid Regional Rail line.",
+            ephemeral=True,
+        )
+        return
+    if not current or line_norm not in current:
+        await interaction.response.send_message(
+            f"⚠️ **{user}**, you are not subscribed to **{line_norm}**.\n"
+            "Use **/my_subscriptions** to check your active subscriptions.",
+            ephemeral=True,
+        )
+        return
+
+    await unsubscribe_to_line(user_id, line_norm)
     await interaction.response.send_message(
-        f"✅ You are unsubscribed from alerts for **{line_name}**.",
+        f"❎ **{user}** ,You are unsubscribed from alerts for **{line_norm}**.",
         ephemeral=True,
     )
 
