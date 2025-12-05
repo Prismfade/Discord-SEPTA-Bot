@@ -298,3 +298,65 @@ def suggest_station(user_input):
 
     # Otherwise return the best fuzzy match
     return matches[0]
+
+REGIONAL_RAIL_LINES = [
+    "Lansdale/Doylestown",
+    "Paoli/Thorndale",
+    "Warminster",
+    "West Trenton",
+    "Airport",
+    "Media/Wawa",
+    "Fox Chase",
+    "Chestnut Hill East",
+    "Chestnut Hill West",
+    "Cynwyd",
+    "Manayunk/Norristown",
+    "Trenton",
+    "Wilmington/Newark",
+]
+
+def normalize_line(name: str) -> str:
+    key = name.lower().strip()
+
+    if key.startswith("lans"):
+        return "Lansdale/Doylestown"
+    if key.startswith("pao") or key.startswith("paol"):
+        return "Paoli/Thorndale"
+    if key.startswith("war"):
+        return "Warminster"
+    if key.startswith("west"):
+        return "West Trenton"
+    if key.startswith("trent"):
+        return "Trenton"
+    if key.startswith("wilm") or key.startswith("newa"):
+        return "Wilmington/Newark"
+    if key.startswith("air"):
+        return "Airport"
+    if key.startswith("media") or key.startswith("wawa"):
+        return "Media/Wawa"
+    if key.startswith("mana") or key.startswith("norristown"):
+        return "Manayunk/Norristown"
+    if key.startswith("fox"):
+        return "Fox Chase"
+    if key.startswith("chestnut hill e"):
+        return "Chestnut Hill East"
+    if key.startswith("chestnut hill w"):
+        return "Chestnut Hill West"
+    if key.startswith("cyn") or key.startswith("cynw"):
+        return "Cynwyd"
+
+    # exact match first
+    for line in REGIONAL_RAIL_LINES:
+        if key == line.lower():
+            return line
+
+    match = difflib.get_close_matches(
+        key,
+        [l.lower() for l in REGIONAL_RAIL_LINES],
+        n=1,
+        cutoff=0.7
+    )
+    if match:
+        return next(l for l in REGIONAL_RAIL_LINES if l.lower() == match[0])
+
+    return name.title()
