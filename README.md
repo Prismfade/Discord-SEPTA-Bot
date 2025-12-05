@@ -31,12 +31,7 @@
     <a href="https://github.com/Prismfade/Discord-SEPTA-Bot"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href=" ">View Demo</a>
-    &middot;
-    <a href=" ">Report Bug</a>
-    &middot;
-    <a href=" ">Request Feature</a>
-  </p>
+    <a href=" ">View Demo</a> <!-- TO-DO: Insert unlisted video demo link here -->
 </div>
 
 
@@ -47,6 +42,8 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#key-features">Key Features</a></li>
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
@@ -59,10 +56,10 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
+        <ul>
+        <li><a href="#live-status-and-rail-information">Live Status and Rail Information</a></li>
+        <li><a href="#subscription-and-alert-management">Subscription and Alert Management</a></li>
+        </ul>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -74,62 +71,27 @@
 
 <p align="left"><a href=" " ><img src="README Assets/Chat-Screenshot.jpeg" width="100%" height="100%" alt="Demo Video"></a></p>
 
-### 📌 Overview
+### ⭐️ Overview
 
-This bot provides live SEPTA Regional Rail updates directly inside Discord — delays, cancellations, arrival times, outages, and station alerts — all pulled from the official SEPTA Regional Rail API’s real-time JSON feeds.
+This bot provides **live SEPTA Regional Rail updates** directly inside Discord — delays, cancellations, arrival times, outages, and station alerts — all pulled from the official SEPTA Regional Rail API’s real-time JSON feeds. It’s built for commuters, Philly-based servers, transit enthusiasts, and anyone who wants **accurate train information** without opening a website or app. Every response is formatted as a **clean Discord embed**, and users interact with the bot through slash commands, dropdown menus, autocompleted options, and classic prefix commands.
 
-It’s built for commuters, Philly-based servers, transit enthusiasts, and anyone who wants accurate train information without opening a website or app. Every response is formatted as a clean Discord embed, and users interact with the bot through slash commands, dropdown menus, autocompleted options, and classic prefix commands.
+Beyond one-off status checks, the bot functions like a **personal transit assistant**. Users can **subscribe to specific lines** and automatically receive **background-pushed outage alerts** as soon as the API updates — no refreshing, no searching, no guessing.
 
-Beyond one-off status checks, the bot functions like a personal transit assistant. Users can subscribe to specific lines and automatically receive background-pushed outage alerts as soon as the API updates — no refreshing, no searching, no guessing.
+---
 
-### 🔍 What It Can Do
+### 🔍 Key Features
 
-* Live network snapshot showing the full Regional Rail system’s current state
-* Line-specific status checks (delays, canceled trips, severe disruptions)
-* Station arrival boards with upcoming trains and ETAs
-* Route finder showing the next available train between two stations
-* Station → line lookup so users see what lines serve a given location
-* Interactive dropdown menus for subscribing/unsubscribing to outage notifications
-* Automatic background alerts posted into a designated Discord channel
-* Autocomplete support to prevent station name typos
-* Fun, personality-based responses and small easter-egg interactions
+* **Live Network Status:** Provides a full Regional Rail system's current snapshot.
+* **Line-Specific Checks:** Get detailed status, including delays, canceled trips, and severe disruptions.
+* **Station Arrivals:** View upcoming trains and estimated times of arrival (ETAs) for any station.
+* **Route Finding:** Quickly find the next available train between two specified stations.
+* **Station-to-Line Lookup:** See exactly which Regional Rail lines serve a given location.
+* **Interactive Subscriptions:** Use dropdown menus to easily subscribe/unsubscribe from outage notifications.
+* **Automatic Alerts:** Receive **background-pushed outage alerts** posted into a designated Discord channel.
+* **Seamless Interaction:** Includes **Autocomplete support** to prevent station name typos and minimize input errors.
+* **Personality:** Features fun, personality-based responses and small easter-egg interactions.
 
-<!-- Original README -->
-<!--## Keywords 
-
-#Discord #Bot #Transportation #Philadelphia #Python #SEPTA API
-
-## Project Abstract
-
-With the modern landscape of SEPTA (South Eastern Pennsylvania Transportation Authority), there has been a lot of certainties about the reliability of the service. This Discord bot service would allow updates to SEPTA transportation systems allowing users to be notified if their services are late. This project is inspired by the humor centric (but also resourceful website) https://www.isseptafucked.com/ For an example, this bot can be implemented to any Discord server, especially local centered ones. All it takes is a user to type in a command such as "!Lansdale line status" to receive information on if there is a delay on that line. The goal is to provide commuters a tool they can use on a familiar platform such as Discord, access to information about SEPTA without having to install the SEPTA application. Providing features such as late times, ways to subscribe to notifications, and even prospect routes based on user inputs.
-
-## High Level Requirement
-
-- Notify users if a subscribed form of transportation is late
-- Allow users to find nearest regional rail route to get to destiation
-- Provide estimated notifications for both subway lines and trolley
-
-## Conceptual Design
-
-This is a screenshot of how the bot would behave at its simplest form: https://imgur.com/a/7Zc6mB1
-
-## Proof of Concept
-
-Like mentioned in the abstract, https://www.isseptafucked.com/ was an inspiration for this project proposal. According to their documentation, they use SEPTAs API to receive all of the data required to track late times of trains. On their FAQ, they mentioned that with using node.js, they were able to asynchronously sync "data from SEPTA's API in the same process, without having to use crontabs. Or a even database for that matter."
-
-Currently using Discord Bot API through Discord development portal. Will need to find a way to implement SEPTA API https://www3.septa.org/.
-
-Current GitHub repository: https://github.com/Prismfade/Discord-SEPTA-Bot Without the secret discord bot token that I only have locally stored on my machine, the program will not run. The basic idea is that through a URL link, you can invite the Discord bot to your personal server. While the program/code is running on an environment along with the discord bot token, users will be able to type syntax commands within a chat to get information such as regional rail statuses.
-
-## Background
-
-To preface the reasoning behind the project, SEPTA has been going through many problems within the last few months that are very prominent. It is hard to find delays on certain SEPTA lines, but there is API available from SEPTA that users can use that keeps track of schedules and delays of SEPTA trains. The goal is to provide transparency to users of SEPTA, by giving them a way to check up on the status of their commute. Due to Discord being a primary platform of communications that people use, it would provide convenience to the hands of many users due to the ease of use of Discord bots.
-
-## Required Resources
-
-Currently a resource that might just needed is a server to host the program to run at all times. The line of code must be running at all times in order for the bot to work. Otherwise I've been able to test the server locally through my terminal environment.-->
-
-
+---
 
 ### 🔨 Built With
 
@@ -137,6 +99,7 @@ Currently a resource that might just needed is a server to host the program to r
 * <a href="https://docs.aiohttp.org/en/stable"><img src="README Assets/aiohttp-logo.png" width="120" height="40" alt="Aiohttp"></a>
 * <a href="https://api.septa.org"><img src="README Assets/septa-logo.jpeg" width="120" height="40" alt="Septa"></a>
 * <a href="https://discordpy.readthedocs.io/en/stable"><img src="README Assets/discord-logo.png" width="120" height="40" alt="Discord"></a>
+* <a href="https://cybrancee.com/discord-bot-hosting"><img src="README Assets/cybrancee-logo.png" width="120" height="40" alt="Cybranceee"></a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -145,70 +108,75 @@ Currently a resource that might just needed is a server to host the program to r
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+To get a local copy of SEPTA Discord Bot up and running follow these simple steps.
 
-### Prerequisites
+### ⚠️ Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
+* pip
   ```sh
-  npm install npm@latest -g
+  pip install python-dotenv # or pip3 install python-dotenv 
   ```
 
-### Installation
+* pip
+  ```sh
+  pip install discord.py # or /Applications/Python\ 3.13/Install\ Certificates.command
+  ```
 
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+### 🧱 Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+1. Clone the repo
    ```sh
    git clone https://github.com/Prismfade/Discord-SEPTA-Bot.git
    ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
+
+2. Enter your API in `config.js`
    ```js
-   const API_KEY = 'xxx';
+   const API_KEY = 'MTQyODQwNTY0NTk1NDEyMTc5MA.GISJBA.lK_Ub5_4RSS-k3n423ymSP-xyGaTotGGuxLvvQ';
    ```
-5. Change git remote url to avoid accidental pushes to base project
+3. Change git remote url to avoid accidental pushes to base project
    ```sh
-   git remote set-url origin github_username/repo_name
+   git remote set-url origin https://github.com/Prismfade/Discord-SEPTA-Bot
    git remote -v # confirm the changes
    ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+4. Run main.py to start the bot
+    ```sh
+    python main.py # or python3 main.py
+                   # or .venv\Scripts\activate before python main.py
+    ```
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+The bot supports modern **Slash Commands** (prefixed with `/`).
+
+### 📊 Live Status and Rail Information
+
+| Command | Type | Description | Example Usage |
+| :--- | :--- | :--- | :--- |
+| **`/regional_rail_status`** | Slash | Shows **live delays** on all Regional Rail trains. | `/regional_rail_status` |
+| **`/check_line_status`** `name` | Slash | Checks the **status of a specific train line**. | `/check_line_status name:Lansdale/Doylestown` |
+| **`/next_train`** `origin` `destination` | Slash | Finds the **next train** between two stations. | `/next_train origin:30th Street Station destination:Suburban Station` |
+| **`/station`** `name` | Slash | Gets the next **arrival times for a specific station**. | `/station name:Temple University` |
+| **`/lines`** | Slash | Finds out **what lines serve a station**. | `/lines` |
+| **`/help`** | Slash | Shows a list of **all available commands**. | `/help` |
+
+### 🔔 Subscription and Alert Management
+
+These commands manage real-time outage alerts for specific Regional Rail lines.
+
+| Command | Type | Description | Example Usage |
+| :--- | :--- | :--- | :--- |
+| **`/my_subscriptions`** | Slash | Shows which lines you are currently **subscribed** to. | `/my_subscriptions` |
+| **`/subscribe_line`** `line_name` | Slash | **Subscribe** to outage alerts (requires exact line name). | `/subscribe_line line_name:Trenton` |
+| **`/unsubscribe_line`** `line_name` | Slash | **Unsubscribe** from outage alerts. | `/unsubscribe_line line_name:Paoli/Thorndale` |
+| **`/subscribemenu`** | Slash / Text | Opens a **dropdown menu** to easily select and subscribe. | `/subscribemenu` |
+| **`/unsubscribemenu`** | Slash / Text | Opens a **dropdown menu** to easily select and unsubscribe. | `/unsubscribemenu` |
 
 _For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the Unlicense License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Your Name - email@example.com
-
-Project Link: https://github.com/Prismfade/Discord-SEPTA-Bot
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
