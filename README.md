@@ -101,6 +101,16 @@ Beyond one-off status checks, the bot functions like a **personal transit assist
 * <a href="https://discordpy.readthedocs.io/en/stable"><img src="README Assets/discord-logo.png" width="120" height="40" alt="Discord"></a>
 * <a href="https://cybrancee.com/discord-bot-hosting"><img src="README Assets/cybrancee-logo.png" width="120" height="40" alt="Cybranceee"></a>
 
+---
+
+<!-- INVITE BOT TO SERVER -->
+### Invite Bot to Server
+
+Scan the QR Code to add SEPTA Discord Bot to your server.
+
+<img src="README Assets/qr-code.png" width="200" height="200" alt="QR Code"></a>
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -182,10 +192,7 @@ These commands manage real-time outage alerts for specific Regional Rail lines.
 | **`/subscribemenu`** | Slash / Text | Opens a **dropdown menu** to easily select and subscribe. | `/subscribemenu` |
 | **`/unsubscribemenu`** | Slash / Text | Opens a **dropdown menu** to easily select and unsubscribe. | `/unsubscribemenu` |
 
-_For more examples, please refer to the [Documentation](https://example.com)_
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- ACKNOWLEDGMENTS -->
