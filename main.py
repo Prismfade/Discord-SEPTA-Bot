@@ -3,7 +3,7 @@ import random
 import asyncio
 import logging
 from typing import List
-
+from line_status import LineStatusMonitor
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -93,6 +93,8 @@ class MyBot(commands.Bot):
     async def setup_hook(self):
         # Load the StationAlerts cog so background alerts start running
         await self.add_cog(StationAlerts(self))
+        await self.add_cog(LineStatusMonitor(self))
+
 
 
 bot = MyBot()
@@ -150,8 +152,36 @@ async def station(interaction: discord.Interaction, name: str):
 )
 @app_commands.describe(name=  "Which train line would you like to check? (e.g. Paoli, Trenton, Lansdale)")
 async def check_line_status_slash(interaction: discord.Interaction, name: str):
+   #Bug: enter anyhting line even if its a staiton it will check it and try to fetch the data
 
-   correct = normalize_station(name)
+   raw = name.strip()
+   #Normalize for checking
+   line_norm = normalize_line(raw)
+   is_real_station = raw.lower() in (s.lower() for s in REGIONAL_RAIL_STATIONS)
+   is_real_line = line_norm in REGIONAL_RAIL_LINES
+
+
+   if is_real_station and not is_real_line:
+       await interaction.response.send_message(
+           f"⚠️ `{raw}` looks like a **station**, not a train line.\n"
+           "Try again with a line name instead (e.g. *Warminster, Fox Chase, Paoli/Thorndale*).",
+           ephemeral=True
+       )
+       return
+
+   # or its just soemthing random
+   if line_norm not in REGIONAL_RAIL_LINES:
+       await interaction.response.send_message(
+           f"⚠️ `{raw}` is **not a valid Regional Rail line**.\n"
+           "Try checking a real line like:\n"
+           "-Lansdale/Doylestown\n"
+           "-Paoli/Thorndale\n"
+           "-Trenton\n"
+           "-Fox Chase",
+           ephemeral=True
+       )
+       return
+   correct = line_norm
 
    await interaction.response.send_message(
        box(f"Fetching **{correct} Line** status…")
