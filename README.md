@@ -124,22 +124,28 @@ To get a local copy of SEPTA Discord Bot up and running follow these simple step
 
 ### 🧱 Installation
 
-1. Clone the repo
+1. Create your personal API Key
+   ```sh
+   xxx
+   ```
+
+2. Clone the repo
    ```sh
    git clone https://github.com/Prismfade/Discord-SEPTA-Bot.git
    ```
 
-2. Enter your API in `config.js`
+3. Enter your API in `config.js`
    ```js
-   const API_KEY = 'MTQyODQwNTY0NTk1NDEyMTc5MA.GISJBA.lK_Ub5_4RSS-k3n423ymSP-xyGaTotGGuxLvvQ';
+   const API_KEY = 'your_API_key';
    ```
-3. Change git remote url to avoid accidental pushes to base project
+
+4. Change git remote url to avoid accidental pushes to base project
    ```sh
    git remote set-url origin https://github.com/Prismfade/Discord-SEPTA-Bot
    git remote -v # confirm the changes
    ```
 
-4. Run main.py to start the bot
+5. Run main.py to start the bot
     ```sh
     python main.py # or python3 main.py
                    # or .venv\Scripts\activate before python main.py
