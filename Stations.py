@@ -318,32 +318,52 @@ REGIONAL_RAIL_LINES = [
 def normalize_line(name: str) -> str:
     key = name.lower().strip()
 
-    if key.startswith("lans"):
+    #landsdale / doles
+    if key.startswith(("lans", "lansd", "lansda", "doyl", "doyle", "doyles", "doylest")):
         return "Lansdale/Doylestown"
-    if key.startswith("pao") or key.startswith("paol"):
+
+    #paoli/Thorndale
+    if key.startswith(("pao", "paol", "paoli", "thor", "thornd", "thorns")):
         return "Paoli/Thorndale"
-    if key.startswith("war"):
+
+    #Warminster
+    if key.startswith(("war", "warm", "warmin")):
         return "Warminster"
-    if key.startswith("west"):
+
+    #West Trenton
+    if key.startswith(("west", "wtre", "w trent", "trent")):
         return "West Trenton"
-    if key.startswith("trent"):
-        return "Trenton"
-    if key.startswith("wilm") or key.startswith("newa"):
+
+    #Wilmington/Newark
+    if key.startswith(("wilm", "newa", "newar")):
         return "Wilmington/Newark"
-    if key.startswith("air"):
-        return "Airport"
-    if key.startswith("media") or key.startswith("wawa"):
-        return "Media/Wawa"
-    if key.startswith("mana") or key.startswith("norristown"):
+
+    #Manayunk/Norristown
+    if key.startswith(("mana", "manay", "norr", "norri", "norrist", "norristown")):
         return "Manayunk/Norristown"
+
+    #Media/Wawa
+    if key.startswith(("media", "wawa")):
+        return "Media/Wawa"
+
+    #airport
+    if key.startswith(("air", "airport")):
+        return "Airport"
+
+    #fox chase
     if key.startswith("fox"):
         return "Fox Chase"
-    if key.startswith("chestnut hill e"):
+
+    #chestnut hill East / West
+    if key.startswith(("chestnut hill e", "che hill e")):
         return "Chestnut Hill East"
-    if key.startswith("chestnut hill w"):
+    if key.startswith(("chestnut hill w", "che hill w")):
         return "Chestnut Hill West"
-    if key.startswith("cyn") or key.startswith("cynw"):
+
+    #Cynwyd
+    if key.startswith(("cyn", "cynw")):
         return "Cynwyd"
+
 
     # exact match first
     for line in REGIONAL_RAIL_LINES:
