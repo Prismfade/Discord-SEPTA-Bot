@@ -47,7 +47,37 @@ async def get_regional_rail_status():
     except Exception as e:
         return f"Error fetching SEPTA data: {e}"
 
-# Fetch SEPTA Line Status by Name (Only trains running late)
+def get_direction_from_dest(dest: str) -> str:
+    """
+    Determine whether the train is Inbound or Outbound using the destination.
+    Inbound  = heading toward Center City stations.
+    Outbound = heading away from Center City.
+    """
+
+    if not dest:
+        return "➡️ Outbound"  # default if no destination provided
+
+    d = dest.lower().strip()
+
+    # All trains heading INTO Center City should be labeled inbound
+    inbound_keywords = [
+        "jefferson",        # Jefferson Station
+        "suburban",         # Suburban Station
+        "30th",             # 30th Street Station
+        "temple",           # Temple University
+        "university city",  # University City / Penn Medicine
+        "center",           # "Center City"
+    ]
+
+    # If destination matches any inbound station -> inbound
+    if any(k in d for k in inbound_keywords):
+        return "⬅️ Inbound"
+
+    # Everything else -> outbound
+    return "➡️ Outbound"
+
+
+# Fetch SEPTA Line Status by Name
 async def get_line_status(line_name):
     url = "https://www3.septa.org/api/TrainView/index.php"
     try:
@@ -69,13 +99,16 @@ async def get_line_status(line_name):
                 if not matching_trains:
                     return f"No trains found for '{line_name.title()}' line."
 
-                # Summarize only trains that are late
                 delayed = []
                 for train in matching_trains:
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
+                    dest = train.get("dest", "Unknown destination")
 
+                    direction = get_direction_from_dest(dest)
+
+                    # Existing status logic
                     if delay == 0:
                         status = "On time ✅"
                     elif delay <= 5:
@@ -87,15 +120,20 @@ async def get_line_status(line_name):
                         else:
                             status = f"{delay} min late ⛔"
 
-
-                    delayed.append(f"🚆🛑 {line} Train {train_id} :{status}" )
-
+                    delayed.append(
+                        f"{direction} 🚆 {line} Train {train_id} → {dest} : {status}"
+                    )
 
                 if not delayed:
-                    # return f"All {line_name.title()} Line trains are on time ✅"
                     return f"Line is active and all trains are on time. ✅"
 
-                return "\n".join(delayed[:10])  # Limit to first 10 results
+                legend = (
+                "\n\n**Legend:**\n"
+                "⬅️ **Inbound** = Train heading *toward Center City* (Jefferson, Suburban, 30th St, Temple)\n"
+                "➡️ **Outbound** = Train heading *away from Center City*\n"
+                )
+
+                return "\n".join(delayed[:10]) + legend
 
     except Exception as e:
         return f"Error fetching SEPTA data: {e}"
