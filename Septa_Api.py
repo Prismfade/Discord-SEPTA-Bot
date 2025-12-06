@@ -30,12 +30,16 @@ async def get_regional_rail_status():
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
+                    if int(delay) >= 500:
+                        emoji = "❌"
+                        status = "Canceled"
+                    else:
+                        # Choose emoji based on delay
+                        emoji = "🟢" if delay == 0 else "🛑"
+                        status = "on time" if delay == 0 else f"{delay} min late"
 
-                    # Choose emoji based on delay
-                    emoji = "🟢" if delay == 0 else "🛑"
-                    status = "on time" if delay == 0 else f"{delay} min late"
 
-                    # Format with emoji FIRST
+                        # Format with emoji FIRST
                     trains.append(f"{emoji} 🚆 {line} Train {train_id}: {status}")
 
                 return "\n".join(trains)
@@ -43,7 +47,37 @@ async def get_regional_rail_status():
     except Exception as e:
         return f"Error fetching SEPTA data: {e}"
 
-# Fetch SEPTA Line Status by Name (Only trains running late)
+def get_direction_from_dest(dest: str) -> str:
+    """
+    Determine whether the train is Inbound or Outbound using the destination.
+    Inbound  = heading toward Center City stations.
+    Outbound = heading away from Center City.
+    """
+
+    if not dest:
+        return "➡️ Outbound"  # default if no destination provided
+
+    d = dest.lower().strip()
+
+    # All trains heading INTO Center City should be labeled inbound
+    inbound_keywords = [
+        "jefferson",        # Jefferson Station
+        "suburban",         # Suburban Station
+        "30th",             # 30th Street Station
+        "temple",           # Temple University
+        "university city",  # University City / Penn Medicine
+        "center",           # "Center City"
+    ]
+
+    # If destination matches any inbound station -> inbound
+    if any(k in d for k in inbound_keywords):
+        return "⬅️ Inbound"
+
+    # Everything else -> outbound
+    return "➡️ Outbound"
+
+
+# Fetch SEPTA Line Status by Name
 async def get_line_status(line_name):
     url = "https://www3.septa.org/api/TrainView/index.php"
     try:
@@ -65,20 +99,41 @@ async def get_line_status(line_name):
                 if not matching_trains:
                     return f"No trains found for '{line_name.title()}' line."
 
-                # Summarize only trains that are late
                 delayed = []
                 for train in matching_trains:
                     line = train.get("line", "Unknown Line")
                     train_id = train.get("trainno", "Unknown Train")
                     delay = train.get("late", 0)
-                    if delay > 0:
-                        delayed.append(f"🚆🛑 {line} Train {train_id} : {delay} min late")
+                    dest = train.get("dest", "Unknown destination")
+
+                    direction = get_direction_from_dest(dest)
+
+                    # Existing status logic
+                    if delay == 0:
+                        status = "On time ✅"
+                    elif delay <= 5:
+                        status = f"{delay} min late ⚠️"
+                    else:
+                        being_cancel = "Canceled 😡"
+                        if delay >= 999:
+                            status = f"{being_cancel}"
+                        else:
+                            status = f"{delay} min late ⛔"
+
+                    delayed.append(
+                        f"{direction} 🚆 {line} Train {train_id} → {dest} : {status}"
+                    )
 
                 if not delayed:
-                    # return f"All {line_name.title()} Line trains are on time ✅"
                     return f"Line is active and all trains are on time. ✅"
 
-                return "\n".join(delayed[:10])  # Limit to first 10 results
+                legend = (
+                "\n\n**Legend:**\n"
+                "⬅️ **Inbound** = Train heading *toward Center City* (Jefferson, Suburban, 30th St, Temple)\n"
+                "➡️ **Outbound** = Train heading *away from Center City*\n"
+                )
+
+                return "\n".join(delayed[:10]) + legend
 
     except Exception as e:
         return f"Error fetching SEPTA data: {e}"
@@ -198,6 +253,26 @@ async def get_station_arrivals(station_name):
 
     # Convert whatever the user typed into a proper station name
     station = normalize_station(station_name)
+
+    unsupported_station ={
+        "norristown",
+        "norristown tc",
+        "norristown transportation center",
+        "norristown transit center",
+        "ntc",
+    }
+
+    if station.lower() in unsupported_station:
+
+        return (
+            "⚠️ **Norristown does not provide live arrival data in SEPTA’s API.**\n"
+            "SEPTA does not publish arrivals for this stop.\n\n"
+            "Nearby stations with live arrival data:\n"
+            "• **Manayunk**\n"
+            "• **Miquon**\n"
+            "• **Conshohocken**"
+        )
+
     url = "https://www3.septa.org/api/TrainView/index.php"
     url2 = f"https://www3.septa.org/api/Arrivals/index.php?station={station}"
     arrivals = []
@@ -280,14 +355,19 @@ async def get_station_arrivals(station_name):
                 sched_depart_str = depart_dt.strftime("%I:%M %p").lstrip("0")
             else:
                 sched_depart_str = "N/A"
+
             #compute ETA
             if sched_arrival_dt:
                 now = datetime.now()
                 eta_delta = sched_arrival_dt -now
                 eta_minutes = max(int(eta_delta.total_seconds() // 60), 0)
             else:
-                eta_minutes = "N/A"  
-            
+                eta_minutes = 999
+
+            if eta_minutes >= 500:
+                eta_display = "❌ Canceled"
+            else:
+                eta_display = f"{eta_minutes} min"
 
             # Calculate the actual arrival time (right now + due minutes)
             # try:
@@ -319,7 +399,7 @@ async def get_station_arrivals(station_name):
                 f"Scheduled arrival: **{sched_arrival_str}**\n"
                 f"Scheduled departure: **{sched_depart_str}**\n"
                 f"Track: **{track}**\n"
-                f"ETA: Arriving in **{eta_minutes} min** (at **{sched_arrival_str}**)\n"
+                f"ETA: Arriving in **{eta_display}**(at **{sched_arrival_str}**)\n"
                 f"Status: {official_status}\n"
 
             )
