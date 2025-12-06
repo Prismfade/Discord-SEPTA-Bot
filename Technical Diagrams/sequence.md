@@ -28,27 +28,45 @@ sequenceDiagram
     Bot-->>Discord: Formatted status message
 
     %% User subscribes to a line
-    User->>Discord: /subscribe
-    Discord->>Bot: Message event
-
-    Bot->>Bot: Fetch list of lines
-    Bot->>User: SubscribeLineView (buttons)
+    User->>Discord: /subscribemenu
+    Discord->>Bot: Slash Command Event
+    Bot->>API: fetch_line_station_map()
+    Bot-->>Discord: Show SubscribeLineView (dropdown)
     User->>Bot: Select line
-
-    Bot->>SubSys: Save subscription (user_id → line)
-    Bot-->>User: "Subscribed to Paoli Line!"
+    Bot->>SubSys: subscribe_to_line(user, line)
+    Bot-->>Discord: "Subscribed!"
+    
 
     %% Background notifications
-    loop Every 60 seconds
-        Bot->>API: get_line_status(subscribed_line)
-        API-->>Bot: Status result
-        alt If delayed or late
-            Bot->>SubSys: notify_line(users, status)
-            SubSys->>Discord: Send alert to subscribed users
-        end
+    loop Every 90 seconds(StationAlerts Cog)
+    
+        Bot->>API: fetch_route_alerts()
+        API-->>Alerts: detect outage/delay
+            Alerts->>SubSys: get subscribers
+            Alerts->>Discord: Send outage embed
+            SubSys->>Discord: DM subscribers
     end
 
+
+    User->>Discord: /menu
+    Discord->>Bot: Slash command event
+    Bot->>API: fetch_line_station_map()
+    API-->>Bot: line_map
+    Bot-->>Discord: Send LineView (dropdown)
+    User->>UI: Select line
+    UI->>Bot: LineSelect.callback()
+    Bot->>API: get_line_status(line)
+    API-->>Bot: status JSON
+    Bot-->>Discord: Send StationView (dropdown)
+    User->>UI: Select station
+    UI->>Bot: StationSelect.callback()
+    Bot->>API: get_station_arrivals(station)
+    API-->>Bot: arrival JSON
+    Bot-->>Discord: Full arrival info
+    
+    
     %% Fun interactions
-    User->>Bot: "good bot" / "spin" / "O I I A I"
+    User->>Discord: "good bot" / "spin" / "O I I A I"
+    Discord->>Bot: on_message event
     Bot->>Bot: Random compliment OR cat spin logic
-    Bot-->>User: Response + cat_spin.gif
+    Bot-->>Discord: Response + cat_spin.gif
