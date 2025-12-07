@@ -139,7 +139,7 @@ To get a local copy of SEPTA Discord Bot up and running follow these simple step
 
 2. Click on 'New Application' and assign a name to your bot
 
-3. On the left side menu, open 'Bot' and obtain token to paste for use in .env
+3. On the left side menu, open 'Bot' and obtain token to paste in the .env file
 
 ### 🧱 Installation
 
