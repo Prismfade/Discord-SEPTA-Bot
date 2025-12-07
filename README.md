@@ -132,6 +132,15 @@ To get a local copy of SEPTA Discord Bot up and running follow these simple step
   pip install discord.py # or /Applications/Python\ 3.13/Install\ Certificates.command
   ```
 
+
+### Obtain Discord Bot Token
+
+1. Log-in to Discord's Developer Portal in Applications https://discord.com/developers/applications
+
+2. Click on 'New Application' and assign a name to your bot
+
+3. On the left side menu, open 'Bot' and obtain token to paste for use in .env
+
 ### 🧱 Installation
 
 1. Create your personal API Key
