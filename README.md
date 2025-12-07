@@ -12,7 +12,7 @@
 <a href="https://www.linkedin.com/in/christine-kapp-658b41238"><img src="README Assets/Linkedin-Shield2.png" width="100" height="30" alt="Linkedin Shield 2"></a>
 <a href=" "><img src="README Assets/Linkedin-Shield3.png" width="100" height="30" alt="Linkedin Shield 3"></a>
 <a href=" "><img src="README Assets/Linkedin-Shield4.png" width="100" height="30" alt="Linkedin Shield 4"></a>
-<a href=" "><img src="README Assets/Linkedin-Shield5.png" width="100" height="30" alt="Linkedin Shield 5"></a>
+<a href="https://www.linkedin.com/in/justinphams/"><img src="README Assets/Linkedin-Shield5.png" width="100" height="30" alt="Linkedin Shield 5"></a>
 <a href=" "><img src="README Assets/Linkedin-Shield6.png" width="100" height="30" alt="Linkedin Shield 6"></a>
 
 
